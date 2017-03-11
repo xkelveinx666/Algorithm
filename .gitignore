@@ -27,3 +27,8 @@
 *.exe
 *.out
 *.app
+
+#useless
+*.json
+*.DS_Store
+*.c
