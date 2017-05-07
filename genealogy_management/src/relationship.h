@@ -1,6 +1,8 @@
 #include <iostream>
+#include <vector>
 #include "person.h"
 using namespace std;
+#define pPointers vector<pPointer> *
 #define FEMALE "女"
 #define MALE "男"
 
@@ -102,30 +104,4 @@ void addBrother(pPointer brother, pPointer person) {
     }
 }
 
-void addRelation(pPointers vectorPointer, pPointer *person) {
-    cout << "依次输入关系输入-1跳过此种关系" << endl;
-    cout << "父亲名称" << endl;
-    pPointer father;
-    do {
-        if (father != NULL) {
-            cout << "父亲性别必须为男性" << endl;
-        }
-        findPerson(vectorPointer, &father);
-    } while (father->getSex() == MALE);
-    (*person)->setFather(father);
-    if (father->getLeftChild() == NULL) {
-        cout << "母亲名称" << endl;
-        pPointer mother;
-        do {
-            if (mother != NULL) {
-                cout << "母亲性别必须为女性" << endl;
-            }
-            findPerson(vectorPointer, &mother);
-        } while (mother->getSex() == "女");
-        (*person)->setMother(mother);
-    } else {
-    }
-    cout << "父亲名称或母亲名称" << endl;
-    pPointer parent;
-    findPerson(vectorPointer, &parent);
-}
+void addRelation(pPointers vectorPointer, pPointer *person) {}
