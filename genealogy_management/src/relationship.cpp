@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "person.h"
+#include "person.cpp"
 using namespace std;
 #define pPointers vector<pPointer> *
 #define FEMALE "女"
