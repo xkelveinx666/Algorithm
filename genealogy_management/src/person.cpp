@@ -222,6 +222,7 @@ class Person {
     }
 
     void addSibling(pPointer newBrother) {
+        //不能将已有父母兄弟姐妹关系节点添加防止多个父母亲或重复节点
         if (!indepent(newBrother)) {
             return;
         }
@@ -263,6 +264,79 @@ class Person {
         cout << "添加孩子成功" << endl;
     }
 
+    void cleanChild(bool notOnlyRelation) {
+        pPointer child = this->getChild();
+        if (child != NULL) {
+            pPointer lastChild = child;
+            while (child->getRightBrother()) {
+                child = child->getRightBrother();
+                lastChild->setRightBrother(NULL);
+                lastChild->setLeftBrother(NULL);
+                lastChild->setRID(-1);
+                lastChild->setLID(-1);
+                if (notOnlyRelation) {
+                    lastChild->cleanChild(notOnlyRelation);
+                    delete lastChild;
+                }
+                lastChild = child;
+            }
+        }
+    }
+
+    void cleanBrother(bool notOnlyRelation) {
+        pPointer leftBrother = this->getLeftBrother();
+        pPointer rightBrother = this->getRightBrother();
+        pPointer deletePerson;
+        if (leftBrother != NULL || rightBrother != NULL) {
+            if (leftBrother == NULL) {
+                deletePerson = this;
+                pPointer father = this->getFather();
+                father->setChild(NULL);
+                father->addChild(rightBrother);
+            } else if (rightBrother == NULL) {
+                leftBrother->setRightBrother(NULL);
+                leftBrother->setRID(-1);
+            } else {
+                leftBrother->setRID(rightBrother->getID());
+                leftBrother->setRightBrother(rightBrother);
+                rightBrother->setLID(leftBrother->getID());
+                rightBrother->setLeftBrother(leftBrother);
+            }
+            this->setLeftBrother(NULL);
+            this->setRightBrother(NULL);
+            this->setLID(-1);
+            this->setRID(-1);
+        } else if (this->getFather() != NULL) {
+            pPointer father = this->getFather();
+            pPointer mother = this->getMother();
+            father->cleanChild(notOnlyRelation);
+            mother->cleanChild(notOnlyRelation);
+        }
+    }
+
+    void cleanFather(bool notOnlyRelation) {
+        cout << "清除父亲关系同时会清除母亲关系" << endl;
+        this->cleanBrother(notOnlyRelation);
+    }
+
+    void cleanMother(bool notOnlyRelation) {
+        cout << "清除母亲关系同时会清除父亲关系" << endl;
+        this->cleanBrother(notOnlyRelation);
+    }
+
+    void cleanSpouse(bool notOnlyRelation) {
+        pPointer spouse = this->spouse;
+        cout << "清理配偶时也会将孩子清除同时会将孩子间的兄弟姐妹删除" << endl;
+        if (spouse != NULL) {
+            this->cleanChild(notOnlyRelation);
+            spouse->setSpouse(NULL);
+            spouse->setSID(-1);
+            this->setSpouse(NULL);
+            this->setSID(-1);
+        }
+        return;
+    }
+
     void cleanRelation() {
         this->child = NULL;
         this->father = NULL;
@@ -272,6 +346,8 @@ class Person {
         this->rightBrother = NULL;
         this->occupation = NULL;
     }
+
+    void deletePerson() { this->cleanSpouse(true); }
 
     void showInfo() {
         cout << this->getName() << "     ";
@@ -289,6 +365,8 @@ class Person {
         cout << this->getMID() << "    ";
         cout << this->getSID() << "    ";
         cout << this->getCID() << "    ";
+        cout << this->getLID() << "    ";
+        cout << this->getRID() << "    ";
         cout << endl;
     }
 

@@ -329,7 +329,40 @@ void addRelation(pPointers vectorPointer, pPointer *person) {
     // findPerson(vectorPointer, &parent);
 }
 
-bool deleteRelation(pPointers vectorPointer, pPointer *person) { return true; }
+bool deleteRelation(pPointers vectorPointer, pPointer *person) {
+    int relationIndex;
+    cout << "请输入要添加的关系的序号" << endl;
+    cout << "1:父亲" << endl;
+    cout << "2:母亲" << endl;
+    cout << "3:夫妻" << endl;
+    cout << "4:兄弟姐妹" << endl;
+    cout << "5:孩子" << endl;
+    cin >> relationIndex;
+    if (relationIndex != 1 && relationIndex != 2 && relationIndex != 3 &&
+        relationIndex != 4 && relationIndex != 5) {
+        cout << "未选择正确编号" << endl;
+        pause();
+        return false;
+    }
+    switch (relationIndex) {
+        case 1:
+            (*person)->addFather(otherPerson);
+            break;
+        case 2:
+            (*person)->addMother(otherPerson);
+            break;
+        case 3:
+            (*person)->addSpouse(otherPerson);
+            break;
+        case 4:
+            (*person)->addSibling(otherPerson);
+            break;
+        case 5:
+            (*person)->addChild(otherPerson);
+            break;
+    }
+    pause();
+}
 
 bool findPerson(pPointers vectorPointer, pPointer *pointer) {
     // 3次机会
