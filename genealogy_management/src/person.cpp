@@ -2,6 +2,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include "calendar.cpp"
 #include "occupation.cpp"
 #define pPointer Person*
 
@@ -53,9 +54,13 @@ class Person {
 
     void showDeathDay() {
         tm date = this->deathDay;
-        cout << date.tm_year << "年";
-        cout << date.tm_mon << "月";
-        cout << date.tm_mday << "日";
+        if (date.tm_year == 0) {
+            cout << "      " << endl;
+        } else {
+            cout << date.tm_year << "年";
+            cout << date.tm_mon << "月";
+            cout << date.tm_mday << "日";
+        }
     }
 
     pPointer getFather() { return this->father; }
@@ -64,19 +69,91 @@ class Person {
     pPointer getLeftBrother() { return this->leftBrother; }
     pPointer getRightBrother() { return this->rightBrother; }
     pPointer getChild() { return this->child; }
-    void setFather(pPointer father) { this->father = father; }
-    void setMother(pPointer mother) { this->mother = mother; }
-    void setSpouse(pPointer spouse) { this->spouse = spouse; }
+    int getOID() { return this->oID; }
+    int getFID() { return this->fID; }
+    int getMID() { return this->mID; }
+    int getSID() { return this->sID; }
+    int getLID() { return this->lID; }
+    int getRID() { return this->rID; }
+    int getCID() { return this->cID; }
+    void setOID(int newID) { this->oID = newID; }
+    void setFID(int newID) { this->fID = newID; }
+    void setMID(int newID) { this->mID = newID; }
+    void setSID(int newID) { this->sID = newID; }
+    void setLID(int newID) { this->lID = newID; }
+    void setRID(int newID) { this->rID = newID; }
+    void setCID(int newID) { this->cID = newID; }
+    void setFather(pPointer father) {
+        this->father = father;
+        this->setFID(father->getID());
+    }
+    void setMother(pPointer mother) {
+        this->mother = mother;
+        this->setMID(mother->getID());
+    }
+    void setSpouse(pPointer spouse) {
+        this->spouse = spouse;
+        this->setSID(spouse->getID());
+    }
     void setLeftBrother(pPointer leftBrother) {
         this->leftBrother = leftBrother;
+        this->setLID(leftBrother->getID());
     }
     void setRightBrother(pPointer rightBrother) {
         this->rightBrother = rightBrother;
+        this->setRID(rightBrother->getID());
     }
-    void setChild(pPointer child) { this->child = child; }
+    void setChild(pPointer child) {
+        this->child = child;
+        this->setCID(child->getID());
+    }
 
     oPointer getOccupation() { return this->occupation; }
     void setOccupation(oPointer occupation) { this->occupation = occupation; }
+
+    void editSex() {
+        string sex;
+        cout << "性别(男、女)" << endl;
+        cin >> sex;
+        if (sex != "男" && sex != "女") {
+            cout << "性别未按格式要求输入" << endl;
+        } else if (this->getSpouse() != NULL) {
+            cout << "已有配偶不能修改性别" << endl;
+        } else {
+            this->setSex(sex);
+        }
+    }
+
+    void editBirthDay() {
+        int year;
+        int month;
+        int day;
+        cPointer cp = new Calendar();
+        cout << "请添加出生日期" << endl;
+        while (!(cp->addCalendar())) {
+            cout << "必须添加出生日期" << endl;
+        }
+        year = cp->getYear();
+        month = cp->getMonth();
+        day = cp->getDay();
+        this->setBirthDay(year, month, day);
+    }
+
+    void editDeathDay() {
+        int year;
+        int month;
+        int day;
+        cPointer cp = new Calendar();
+        cout << "请添加死亡日期" << endl;
+        if ((cp->addCalendar())) {
+            year = cp->getYear();
+            month = cp->getMonth();
+            day = cp->getDay();
+            this->setDeathDay(year, month, day);
+        } else {
+            cout << "此人健康未死亡" << endl;
+        }
+    }
 
     void showPersonInformation() {
         cout << "ID = " << this->getID() << endl;
@@ -85,36 +162,55 @@ class Person {
     }
 
     void addFather(pPointer father) {
-        pPointer originalFather = this->getFather();
-        if (originalFather != NULL) {
+        pPointer firstChild = this->getLeftBrother();
+        if (firstChild != NULL) {
             cout << "已有父亲" << endl;
         } else {
-            this->setFather(father);
-            pPointer child = father->getChild();
-            while (child != NULL) {
-                child = child->getRightBrother();
+            if (father->getSpouse() == NULL) {
+                cout << "父亲必须有配偶" << endl;
             }
-            child = this;
+            if (father->getChild() != NULL && father->getChild() != this) {
+                pPointer child = father->getChild();
+                while (child->getRightBrother() != NULL) {
+                    child = child->getRightBrother();
+                }
+                child->setRightBrother(this);
+                this->setLeftBrother(child);
+            } else {
+                father->setChild(this);
+                this->setFather(father);
+            }
         }
     }
 
     void addMother(pPointer mother) {
-        pPointer originalMother = this->getMother();
-        if (originalMother != NULL) {
+        pPointer firstChild = this->getLeftBrother();
+        if (firstChild != NULL) {
             cout << "已有母亲" << endl;
         } else {
-            this->setMother(mother);
-            pPointer child = mother->getChild();
-            while (child != NULL) {
-                child = child->getRightBrother();
+            if (mother->getSpouse() == NULL) {
+                cout << "母亲必须有配偶" << endl;
+                return;
             }
-            child = this;
+            if (mother->getChild() != NULL && mother->getChild() != this) {
+                pPointer child = mother->getChild();
+                while (child->getRightBrother() != NULL) {
+                    child = child->getRightBrother();
+                }
+                child->setRightBrother(this);
+                this->setLeftBrother(child);
+            } else {
+                mother->setChild(this);
+                this->setMother(mother);
+            }
         }
     }
 
     void addSpouse(pPointer spouse) {
         if (this->getSpouse() != NULL) {
-            cout << "已有配偶" << endl;
+            if (this->getSpouse()->getSpouse() != this) {
+                cout << "已有配偶" << endl;
+            }
         } else {
             if (spouse->getSex() == this->getSex()) {
                 cout << "夫妻性别不能相同" << endl;
@@ -126,8 +222,11 @@ class Person {
     }
 
     void addSibling(pPointer newBrother) {
+        if (!indepent(newBrother)) {
+            return;
+        }
         pPointer brother = this->getRightBrother();
-        while (brother != NULL) {
+        while (brother->getRightBrother() != NULL) {
             brother = brother->getRightBrother();
         }
         cout << "添加兄弟或姐妹成功" << endl;
@@ -137,11 +236,41 @@ class Person {
 
     void addChild(pPointer newChild) {
         pPointer child = this->getChild();
-        while (child != NULL) {
-            child = child->getRightBrother();
+        if (this->getSpouse() == NULL) {
+            cout << "无配偶不能添加孩子" << endl;
+            return;
+        }
+        if (child == NULL || child == newChild) {
+            this->setChild(newChild);
+            this->spouse->setChild(newChild);
+            pPointer father = this->sex ? this : this->getSpouse();
+            newChild->setFather(father);
+            newChild->setMother(father->getSpouse());
+        } else {
+            if (!indepent(newChild)) {
+                return;
+            }
+            while (child->getRightBrother() != NULL) {
+                child = child->getRightBrother();
+                if (child == newChild) {
+                    cout << "不能重复添加" << endl;
+                    return;
+                }
+            }
+            child->setRightBrother(newChild);
+            newChild->setLeftBrother(child);
         }
         cout << "添加孩子成功" << endl;
-        child->setRightBrother(newChild);
+    }
+
+    void cleanRelation() {
+        this->child = NULL;
+        this->father = NULL;
+        this->mother = NULL;
+        this->spouse = NULL;
+        this->leftBrother = NULL;
+        this->rightBrother = NULL;
+        this->occupation = NULL;
     }
 
     void showInfo() {
@@ -156,37 +285,66 @@ class Person {
         if (op != NULL) {
             cout << op->getOccupationName() << "     ";
         }
+        cout << this->getFID() << "    ";
+        cout << this->getMID() << "    ";
+        cout << this->getSID() << "    ";
+        cout << this->getCID() << "    ";
         cout << endl;
     }
 
-    // void changeBinaryTreeToMap() {
-    //     /*从二叉树中找出兄弟链中的第一个兄弟*/
-    //     pPointer father = this->father;
-    //     pPointer lChild = father->leftChild;
-    //     while (father != lChild) {
-    //         father = father->father;
-    //         lChild = father->leftChild;
-    //     }
-    //     pPointer mother = father->rightChild;
-    //     /*将找出的父母,孩子插入set中*/
-    //     this->parents.clear();
-    //     addParents(father);
-    //     addParents(mother);
-    //     pPointer child = father->rightChild->rightChild;
-    //     this->children.clear();
-    //     while (child != NULL) {
-    //         addChildren(child);
-    //         child = child->rightChild;
-    //     }
-    // }
-
-    // void changeMapToBinaryTree() {}
+    void showFamily() {
+        pPointer firstBrother = this;
+        while (firstBrother->getLeftBrother() != NULL) {
+            firstBrother = firstBrother->getLeftBrother();
+        }
+        pPointer father = firstBrother->getFather();
+        pPointer mother = firstBrother->getMother();
+        pPointer spouse = this->getSpouse();
+        pPointer child = this->getChild();
+        if (father != NULL) {
+            cout << "父亲"
+                 << "     ";
+            father->showInfo();
+        }
+        if (mother != NULL) {
+            cout << "母亲"
+                 << "     ";
+            father->showInfo();
+        }
+        cout << "本人"
+             << "     ";
+        this->showInfo();
+        if (spouse != NULL) {
+            cout << "配偶"
+                 << "     ";
+            spouse->showInfo();
+        }
+        while (firstBrother->getRightBrother() != NULL) {
+            firstBrother = firstBrother->getRightBrother();
+            if (firstBrother->getSex() == this->male) {
+                cout << "兄弟";
+            } else {
+                cout << "姐妹";
+            }
+            cout << "     ";
+            firstBrother->showInfo();
+        }
+        if (child != NULL) {
+            do {
+                cout << "孩子"
+                     << "     ";
+                child->showInfo();
+                child = child->getRightBrother();
+            } while (child != NULL);
+        }
+    }
 
    private:
     int id;
     int oID;  //职业编号
     int fID;  //父亲编号
     int mID;  //母亲编号
+    int sID;  //配偶编号
     int lID;  //前兄弟编号
     int rID;  //后兄弟编号
     int cID;  //孩子编号
@@ -202,4 +360,16 @@ class Person {
     tm birthDay;
     tm deathDay;
     const string male = "男";
+    bool indepent(pPointer newBrother) {
+        if ((this->getLID() || this->getRID() || this->getFather() ||
+             this->getMother()) &&
+            (newBrother->getLID() || newBrother->getRID() ||
+             newBrother->getFather() || newBrother->getMother())) {
+            cout << "添加兄弟姐妹关系必须其中之一必须不能已有兄弟姐妹关系"
+                 << endl;
+            return false;
+        } else {
+            return true;
+        }
+    }
 };
