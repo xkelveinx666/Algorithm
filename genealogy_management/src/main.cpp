@@ -346,19 +346,19 @@ bool deleteRelation(pPointers vectorPointer, pPointer *person) {
     }
     switch (relationIndex) {
         case 1:
-            (*person)->addFather(otherPerson);
+            (*person)->cleanFather(false);
             break;
         case 2:
-            (*person)->addMother(otherPerson);
+            (*person)->cleanMother(false);
             break;
         case 3:
-            (*person)->addSpouse(otherPerson);
+            (*person)->cleanSpouse(false);
             break;
         case 4:
-            (*person)->addSibling(otherPerson);
+            (*person)->cleanBrother(false);
             break;
         case 5:
-            (*person)->addChild(otherPerson);
+            (*person)->cleanChild(false);
             break;
     }
     pause();

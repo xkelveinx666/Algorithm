@@ -1,91 +1,52 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <iostream>
+using namespace std;
+int main(void) {
+    char ch;
 
-#include <string.h>
+    int fd[2];
 
-void move(char* data, int from, int to)
+    pid_t childpid;
+    if (pipe(fd) == -1)
 
-{
-    data[to] = data[from];
+    {
+        perror("pipe call");
 
-    data[from] = '.';
-}
-
-int valid(char* data, int k)
-
-{
-    if (k < 0 || k >= strlen(data)) return 0;
-
-    return 1;
-}
-
-void f(char* data)
-
-{
-    int i;
-
-    int tag;
-
-    int dd = 0;  // 移动方向
-
-    while (1) {
-        tag = 0;
-
-        for (i = 0; i < strlen(data); i++) {
-            if (data[i] == '.') continue;
-
-            if (data[i] == 'A') dd = 1;
-
-            if (data[i] == 'B') dd = -1;
-
-            if (valid(data, i + dd) && valid(data, i + dd + dd)
-
-                && data[i + dd] != data[i] && data[i + dd + dd] == '.') {
-                //如果能跳...
-
-                move(data, i, i + dd + dd);
-
-                printf("%s\n", data);
-
-                tag = 1;
-
-                break;
-            }
-        }
-
-        if (tag) continue;
-
-        for (i = 0; i < strlen(data); i++) {
-            if (data[i] == '.') continue;
-
-            if (data[i] == 'A') dd = 1;
-
-            if (data[i] == 'B') dd = -1;
-
-            if (valid(data, i + dd) && data[i + dd] == '.') {
-                // 如果能移动...
-
-                if (data[i] == data[i + dd + dd]) continue;  //填空位置
-
-                move(data, i, i + dd);
-
-                printf("%s\n", data);
-
-                tag = 1;
-
-                break;
-            }
-        }
-
-        if (tag == 0) break;
+        return -1;
     }
-}
+    childpid = fork();
 
-int main()
+    if (childpid != 0)
 
-{
-    char data[] = "AAA.BBB";
+    {
+        close(fd[0]);
 
-    f(data);
+        while (cin.get(ch) && ch != 'x')
 
-    return 0;
+        {
+            write(fd[1], &ch, 1);
+        }
+
+    }
+
+    else if (childpid == 0)
+
+    {
+        close(fd[1]);
+
+        while (read(fd[0], &ch, 1) && ch != 'x')
+
+        {
+            if (ch >= 'a' && ch <= 'z')
+
+            {
+                cout << (char)(ch + 'A' - 'a');
+            }
+
+            else {
+                cout << ch;
+            }
+        }
+    }
 }
