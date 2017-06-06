@@ -5,7 +5,6 @@ using namespace std;
 class Calendar {
    public:
     bool addCalendar() {
-        cout << "输入日期(年、月、日)" << endl;
         int tempYear;
         int tempMonth;
         int tempDay;

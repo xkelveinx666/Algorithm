@@ -225,7 +225,7 @@ bool addPerson(pPointers vectorPointer, pPointer *person) {
     int month;
     int year;
     p->setID(getUsefulIndexInpPointers(vectorPointer));
-    editName(vectorPointer, person);
+    editName(vectorPointer, &p);
     p->editSex();
     p->editBirthDay();
     p->editDeathDay();
@@ -262,7 +262,41 @@ bool addPerson(pPointers vectorPointer, pPointer *person) {
     return true;
 }
 
-bool deletePerson(pPointers vectorPointer, pPointer *person) { return true; }
+bool deletePerson(pPointers vectorPointer, pPointer *person) {
+    int relationIndex;
+    cout << "请输入要删除的人物(若删除的配偶将会把孩子一并删除)" << endl;
+    cout << "1:父亲" << endl;
+    cout << "2:母亲" << endl;
+    cout << "3:夫妻" << endl;
+    cout << "4:兄弟姐妹" << endl;
+    cout << "5:孩子" << endl;
+    cin >> relationIndex;
+    if (relationIndex != 1 && relationIndex != 2 && relationIndex != 3 &&
+        relationIndex != 4 && relationIndex != 5) {
+        cout << "未选择正确编号" << endl;
+        pause();
+        return false;
+    }
+    switch (relationIndex) {
+        case 1:
+            (*person)->cleanFather(true);
+            break;
+        case 2:
+            (*person)->cleanMother(true);
+            break;
+        case 3:
+            (*person)->cleanSpouse(true);
+            break;
+        case 4:
+            (*person)->cleanBrother(true);
+            break;
+        case 5:
+            (*person)->cleanChild(true);
+            break;
+    }
+    pause();
+    return true;
+}
 
 void addRelation(pPointers vectorPointer, pPointer *person) {
     int relationIndex;
@@ -331,7 +365,8 @@ void addRelation(pPointers vectorPointer, pPointer *person) {
 
 bool deleteRelation(pPointers vectorPointer, pPointer *person) {
     int relationIndex;
-    cout << "请输入要添加的关系的序号" << endl;
+    cout << "请输入要删除的关系(若删除的配偶将会把孩子之间的兄弟关系一并删除)"
+         << endl;
     cout << "1:父亲" << endl;
     cout << "2:母亲" << endl;
     cout << "3:夫妻" << endl;
@@ -362,6 +397,7 @@ bool deleteRelation(pPointers vectorPointer, pPointer *person) {
             break;
     }
     pause();
+    return true;
 }
 
 bool findPerson(pPointers vectorPointer, pPointer *pointer) {
@@ -462,10 +498,10 @@ int main(void) {
                 addPerson(vectorPointer, &person);
                 break;
             case 5:
-                deletePerson(vectorPointer, &person);
+                addRelation(vectorPointer, &person);
                 break;
             case 6:
-                addPerson(vectorPointer, &person);
+                deletePerson(vectorPointer, &person);
                 break;
             case 7:
                 deleteRelation(vectorPointer, &person);
@@ -491,8 +527,8 @@ int main(void) {
         cout << "(2)显示该成员家庭信息" << endl;
         cout << "(3)修改个人信息" << endl;
         cout << "(4)添加新人员" << endl;
-        cout << "(5)删除人员" << endl;
-        cout << "(6)添加新关系" << endl;
+        cout << "(5)添加新关系" << endl;
+        cout << "(6)删除人员" << endl;
         cout << "(7)删除关系" << endl;
         cout << "(8)更换登录人员" << endl;
         cout << "(9)保存" << endl;
