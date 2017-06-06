@@ -1,6 +1,6 @@
 #include <iostream>
+#include <set>
 #include <string>
-#include <vector>
 using namespace std;
 #define MAX 100
 int input(int array[]) {
@@ -19,17 +19,20 @@ void output(int array[], int length) {
 }
 
 void dfs(int array[], int index, int y, int sum, string current,
-         vector<string> *vec) {
+         set<string> *s) {
     if (sum == y) {
-        vec->push_back(current);
-        cout << current << endl;
-    } else if (sum < y) {
+        current = current.substr(0, current.length() - 3);
+        s->insert(current);
+    } else if (index >= 0 && sum < y && sum + array[0] <= y) {
+        int newSum = sum;
+        string newCurrent = current;
         if (sum + array[index] <= y) {
-            sum += array[index];
-            current += array[index];
-            current += " + ";
+            newSum += array[index];
+            newCurrent += to_string(array[index]);
+            newCurrent += " + ";
         }
-        dfs(array, index - 1, y, sum, current, vec);
+        dfs(array, index - 1, y, newSum, newCurrent, s);
+        dfs(array, index - 1, y, sum, current, s);
     }
 }
 
@@ -42,16 +45,18 @@ int main(void) {
     cout << "the array is" << endl;
     output(array, length);
     sort(array, array + length);
-    vector<string> vec(length);
-    dfs(array, length - 1, y, 0, "", &vec);
-    if (vec.size() == 0) {
+    set<string> s;
+    if (y >= array[0]) {
+        dfs(array, length - 1, y, 0, "", &s);
+    }
+    if (s.size() == 0) {
         cout << "no match set of Y" << endl;
     } else {
-        cout << "Y has " << endl;
-        vector<string>::iterator begin = vec.begin();
-        vector<string>::iterator end = vec.end();
+        cout << "Y has " << s.size() << " result" << endl;
+        set<string>::iterator begin = s.begin();
+        set<string>::iterator end = s.end();
         while (begin != end) {
-            cout << *begin << endl;
+            cout << y << " =  " << *begin << endl;
             begin++;
         }
     }
