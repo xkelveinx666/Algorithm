@@ -77,7 +77,7 @@ void initateAll(pPointers vectorPointer) {
         }
         if (pointer->getMID() != -1) {
             mother = (*vectorPointer)[pointer->getMID() - 1];
-            pointer->addMother(father);
+            pointer->addMother(mother);
         }
         if (pointer->getSID() != -1) {
             spouse = (*vectorPointer)[pointer->getSID() - 1];
@@ -108,7 +108,7 @@ void savePerson(pPointers vectorPointer) {
     vector<pPointer>::iterator end = vectorPointer->end();
     while (begin != end) {
         pPointer pointer = *begin;
-        pointer->cleanRelation();
+        pointer->cleanRelationForSave();
         writeFile.write((char *)(pointer), sizeof(*pointer));
         begin++;
     }
@@ -511,11 +511,8 @@ int main(void) {
                 break;
             case 9:
                 savePerson(vectorPointer);
-                break;
-            case 10:
-                savePerson(vectorPointer);
                 return 0;
-            case 11:
+            case 10:
                 return 0;
         }
         clearScreen();
@@ -531,9 +528,8 @@ int main(void) {
         cout << "(6)删除人员" << endl;
         cout << "(7)删除关系" << endl;
         cout << "(8)更换登录人员" << endl;
-        cout << "(9)保存" << endl;
-        cout << "(10)退出" << endl;
-        cout << "(11)退出不保存" << endl;
+        cout << "(9)保存并退出" << endl;
+        cout << "(10)退出不保存" << endl;
     } while (cin >> operation);
     return 0;
 }

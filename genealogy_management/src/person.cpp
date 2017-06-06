@@ -170,6 +170,7 @@ class Person {
                 cout << "父亲必须有配偶" << endl;
             }
             if (father->getChild() != NULL && father->getChild() != this) {
+                cout << "test" << endl;
                 pPointer child = father->getChild();
                 while (child->getRightBrother() != NULL) {
                     child = child->getRightBrother();
@@ -180,8 +181,6 @@ class Person {
                 father->setChild(this);
                 this->setFather(father);
             }
-            this->addMother(father->getSpouse());
-            cout << "添加父亲成功，同时自动添加母亲" << endl;
         }
     }
 
@@ -205,8 +204,6 @@ class Person {
                 mother->setChild(this);
                 this->setMother(mother);
             }
-            this->addFather(mother->getSpouse());
-            cout << "添加母亲成功，同时自动添加父亲" << endl;
         }
     }
 
@@ -228,7 +225,7 @@ class Person {
 
     void addSibling(pPointer newBrother) {
         //不能将已有父母兄弟姐妹关系节点添加防止多个父母亲或重复节点
-        if (!indepent(newBrother)) {
+        if (!parentBrotherIndepent(newBrother)) {
             return;
         }
         pPointer brother = this->getRightBrother();
@@ -253,7 +250,7 @@ class Person {
             newChild->setFather(father);
             newChild->setMother(father->getSpouse());
         } else {
-            if (!indepent(newChild)) {
+            if (!spouseChildIndepent(newChild)) {
                 return;
             }
             while (child->getRightBrother() != NULL) {
@@ -360,6 +357,16 @@ class Person {
     }
 
     void cleanRelation() {
+        cleanRelationForSave();
+        this->setCID(-1);
+        this->setFID(-1);
+        this->setMID(-1);
+        this->setSID(-1);
+        this->setLID(-1);
+        this->setRID(-1);
+    }
+
+    void cleanRelationForSave() {
         this->child = NULL;
         this->father = NULL;
         this->mother = NULL;
@@ -367,12 +374,6 @@ class Person {
         this->leftBrother = NULL;
         this->rightBrother = NULL;
         this->occupation = NULL;
-        this->setCID(-1);
-        this->setFID(-1);
-        this->setMID(-1);
-        this->setSID(-1);
-        this->setLID(-1);
-        this->setRID(-1);
     }
 
     void deletePerson() { this->cleanSpouse(true); }
@@ -389,12 +390,12 @@ class Person {
         if (op != NULL) {
             cout << op->getOccupationName() << "     ";
         }
-        cout << this->getFID() << "    ";
-        cout << this->getMID() << "    ";
-        cout << this->getSID() << "    ";
-        cout << this->getCID() << "    ";
-        cout << this->getLID() << "    ";
-        cout << this->getRID() << "    ";
+        // cout << this->getFID() << "    ";
+        // cout << this->getMID() << "    ";
+        // cout << this->getSID() << "    ";
+        // cout << this->getCID() << "    ";
+        // cout << this->getLID() << "    ";
+        // cout << this->getRID() << "    ";
         cout << endl;
     }
 
@@ -415,7 +416,7 @@ class Person {
         if (mother != NULL) {
             cout << "母亲"
                  << "     ";
-            father->showInfo();
+            mother->showInfo();
         }
         cout << "本人"
              << "     ";
@@ -426,7 +427,6 @@ class Person {
             spouse->showInfo();
         }
         while (firstBrother->getRightBrother() != NULL) {
-            firstBrother = firstBrother->getRightBrother();
             if (firstBrother->getSex() == this->male) {
                 cout << "兄弟";
             } else {
@@ -434,6 +434,7 @@ class Person {
             }
             cout << "     ";
             firstBrother->showInfo();
+            firstBrother = firstBrother->getRightBrother();
         }
         if (child != NULL) {
             do {
@@ -466,7 +467,16 @@ class Person {
     tm birthDay;
     tm deathDay;
     const string male = "男";
-    bool indepent(pPointer newBrother) {
+    bool spouseChildIndepent(pPointer newChild) {
+        if ((this->getSpouse() || this->getChild()) &&
+            (newChild->getSpouse() || newChild->getChild())) {
+            cout << "添加孩子关系双方必须不能都已有孩子关系" << endl;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    bool parentBrotherIndepent(pPointer newBrother) {
         if ((this->getLeftBrother() || this->getRightBrother() ||
              this->getFather() || this->getMother()) &&
             (newBrother->getLeftBrother() || newBrother->getRightBrother() ||
