@@ -1,10 +1,11 @@
 #include <ctime>
 #include <iostream>
-#define cPointer Calendar*
+#define cPointer Calendar *
 using namespace std;
 class Calendar {
    public:
     bool addCalendar() {
+        getCurrentYear();
         int tempYear;
         int tempMonth;
         int tempDay;
@@ -26,14 +27,20 @@ class Calendar {
             this->month = 0;
             this->day = 0;
             return false;
+        } else if (tempYear > this->currentYear) {
+            cout << "请输入一个小于当前年份的年" << endl;
         } else {
             this->year = tempYear;
         }
         cout << "请输入月份,1到12月之间" << endl;
         while (cin >> tempMonth) {
             if (tempMonth >= 1 && tempMonth <= 12) {
-                this->month = tempMonth;
-                break;
+                if (tempMonth > this->currentMonth) {
+                    cout << "请输入一个小于当前月份的月" << endl;
+                } else {
+                    this->month = tempMonth;
+                    break;
+                }
             } else {
                 cout << "请输入月份,1到12月之间" << endl;
             }
@@ -42,8 +49,12 @@ class Calendar {
         while (cin >> tempDay) {
             if (tempDay >= 1 && tempDay <= 31) {
                 if (judgeLegalDate(tempYear, tempMonth, tempDay)) {
-                    this->day = tempDay;
-                    break;
+                    if (tempDay > this->currentDay) {
+                        cout << "请输入一个小于当前日期的日" << endl;
+                    } else {
+                        this->day = tempDay;
+                        break;
+                    }
                 } else {
                     cout << "该日期超过该月最大日期,请重新输入日期" << endl;
                 }
@@ -54,16 +65,42 @@ class Calendar {
         return true;
     }
 
+    int compareCalendar(cPointer otherCalendar) {
+        return this->getYear() > otherCalendar->getYear()
+                   ? 1
+                   : this->getMonth() > otherCalendar->getMonth()
+                         ? 1
+                         : this->getDay() > otherCalendar->getDay();
+    }
+
     int getYear() { return this->year; }
 
     int getMonth() { return this->month; }
 
     int getDay() { return this->day; }
 
+    bool setCalendar(int year, int month, int day) {
+        this->year = year;
+        this->month = month;
+        this->day = day;
+        return year;
+    }
+
    private:
     int year;
     int month;
     int day;
+    int currentYear;
+    int currentMonth;
+    int currentDay;
+    void getCurrentYear() {
+        time_t now_time;
+        now_time = time(NULL);
+        tm *currentTime = localtime(&now_time);
+        this->year = currentTime->tm_year + 1900;
+        this->month = currentTime->tm_mon + 1;
+        this->day = currentTime->tm_mday;
+    }
     bool isLeapYear(int year) {
         if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) {
             return true;

@@ -13,9 +13,7 @@ using namespace std;
 #define MALE "男"
 
 pPointers initiatePerson();
-oPointers initiateOccupation();
 void savePerson(pPointers vectorPointer);
-void saveOccupation(oPointers vectorPointer);
 int getUsefulIndex(pPointers vectorPointer);
 bool addPerson(pPointers vectorPointer, pPointer *person);
 bool findPerson(pPointers vectorPointer, pPointer *pointer);
@@ -40,20 +38,6 @@ pPointers initiatePerson() {
     while (readFile.read((char *)(pointer), sizeof(*pointer))) {
         vectorPointer->push_back(pointer);
         pointer = new Person();
-    }
-    readFile.close();
-    return vectorPointer;
-}
-
-oPointers initiateOccupation() {
-    /*循环将Occupation读出*/
-    ifstream readFile;
-    readFile.open(FILE_OCCUPATION_NAME, ios::binary | ios::in);
-    oPointer pointer = new Occupation();
-    oPointers vectorPointer = new vector<oPointer>();
-    while (readFile.read((char *)(pointer), sizeof(*pointer))) {
-        vectorPointer->push_back(pointer);
-        pointer = new Occupation();
     }
     readFile.close();
     return vectorPointer;
@@ -115,38 +99,10 @@ void savePerson(pPointers vectorPointer) {
     writeFile.close();
 }
 
-void saveOccupation(oPointers vectorPointer) {
-    /*循环将Person保存*/
-    fstream writeFile;
-    writeFile.open(FILE_OCCUPATION_NAME,
-                   ios::binary | std::ios::out | std::ios::ate);
-    vector<oPointer>::iterator begin = vectorPointer->begin();
-    vector<oPointer>::iterator end = vectorPointer->end();
-    while (begin != end) {
-        oPointer pointer = *begin;
-        writeFile.write((char *)(pointer), sizeof(*pointer));
-        begin++;
-    }
-    writeFile.close();
-}
-
 int getUsefulIndexInpPointers(pPointers vectorPointer) {
     int index = 1;
     vector<pPointer>::iterator begin = vectorPointer->begin();
     vector<pPointer>::iterator end = vectorPointer->end();
-    while (begin != end) {
-        if (index != (*begin)->getID()) {
-            break;
-        }
-        index++;
-        begin++;
-    }
-    return index;
-}
-int getUsefulIndexInoPointers(oPointers vectorPointer) {
-    int index = 1;
-    vector<oPointer>::iterator begin = vectorPointer->begin();
-    vector<oPointer>::iterator end = vectorPointer->end();
     while (begin != end) {
         if (index != (*begin)->getID()) {
             break;
@@ -205,7 +161,7 @@ bool editPerson(pPointers vectorPointer, pPointer *person) {
             (*person)->editSex();
             break;
         case 3:
-            // (*person)->editOccupation();
+            (*person)->editOccupation();
             break;
         case 4:
             (*person)->editBirthDay();
@@ -220,43 +176,18 @@ bool editPerson(pPointers vectorPointer, pPointer *person) {
 
 bool addPerson(pPointers vectorPointer, pPointer *person) {
     pPointer p = new Person();
-    oPointer op;
-    int day;
-    int month;
-    int year;
     p->setID(getUsefulIndexInpPointers(vectorPointer));
     editName(vectorPointer, &p);
     p->editSex();
     p->editBirthDay();
     p->editDeathDay();
+    p->editOccupation();
     p->setSID(-1);
-    p->setOID(-1);
     p->setFID(-1);
     p->setMID(-1);
     p->setLID(-1);
     p->setRID(-1);
     p->setCID(-1);
-    /*添加职业
-    cout << "输入职业名称" << endl;
-    cin >> name;
-    vector<oPointer>::iterator begin = vectorOPointer->begin();
-    vector<oPointer>::iterator end = vectorOPointer->end();
-    while (begin != end) {
-        if ((*begin)->getOccupationName() == name) {
-            op = *begin;
-            break;
-        }
-        begin++;
-    }
-    if (begin == end) {
-        op = new Occupation();
-        op->setOccupationName(name);
-        cout << op->getOccupationName();
-        op->setID(getUsefulIndexInoPointers(vectorOPointer));
-        vectorOPointer->push_back(op);
-    }
-    p->setOccupation(op);
-    */
     vectorPointer->push_back(p);
     *person = p;
     return true;
@@ -265,35 +196,23 @@ bool addPerson(pPointers vectorPointer, pPointer *person) {
 bool deletePerson(pPointers vectorPointer, pPointer *person) {
     int relationIndex;
     cout << "请输入要删除的人物(若删除的配偶将会把孩子一并删除)" << endl;
-    cout << "1:父亲" << endl;
-    cout << "2:母亲" << endl;
-    cout << "3:夫妻" << endl;
-    cout << "4:兄弟姐妹" << endl;
-    cout << "5:孩子" << endl;
-    cin >> relationIndex;
-    if (relationIndex != 1 && relationIndex != 2 && relationIndex != 3 &&
-        relationIndex != 4 && relationIndex != 5) {
-        cout << "未选择正确编号" << endl;
-        pause();
-        return false;
+    pPointer deletePerson;
+    findPerson(vectorPointer, &deletePerson);
+    //如果删除人物为当前登录人员，需重新设定当前登录人员
+    if (deletePerson == *person) {
+        vector<pPointer>::iterator begin = vectorPointer->begin();
+        vector<pPointer>::iterator end = vectorPointer->end();
+        cout << "删除人物为当前登录人员，系统自动设定当前登录人员" << endl;
+        while (begin != end) {
+            if (*begin == *person) {
+                vectorPointer->erase(begin);
+            }
+            begin++;
+            break;
+        }
+        *person = *(vectorPointer->begin());
     }
-    switch (relationIndex) {
-        case 1:
-            (*person)->cleanFather(true);
-            break;
-        case 2:
-            (*person)->cleanMother(true);
-            break;
-        case 3:
-            (*person)->cleanSpouse(true);
-            break;
-        case 4:
-            (*person)->cleanBrother(true);
-            break;
-        case 5:
-            (*person)->cleanChild(true);
-            break;
-    }
+    deletePerson->deletePerson();
     pause();
     return true;
 }
@@ -315,7 +234,8 @@ void addRelation(pPointers vectorPointer, pPointer *person) {
     }
     pPointer otherPerson;
     findPerson(vectorPointer, &otherPerson);
-    if (otherPerson == NULL) {
+    if (otherPerson == NULL || otherPerson == *person) {
+        cout << "非法输入或不能使与自己添加关系" << endl;
         return;
     }
     switch (relationIndex) {
@@ -336,31 +256,6 @@ void addRelation(pPointers vectorPointer, pPointer *person) {
             break;
     }
     pause();
-    // cout << "依次输入关系输入-1跳过此种关系" << endl;
-    // cout << "父亲名称" << endl;
-    // pPointer father;
-    // do {
-    //     if (father != NULL) {
-    //         cout << "父亲性别必须为男性" << endl;
-    //     }
-    //     findPerson(vectorPointer, &father);
-    // } while (father->getSex() == MALE);
-    // (*person)->setFather(father);
-    // if (father->getSpouse() == NULL) {
-    //     cout << "母亲名称" << endl;
-    //     pPointer mother;
-    //     do {
-    //         if (mother != NULL) {
-    //             cout << "母亲性别必须为女性" << endl;
-    //         }
-    //         findPerson(vectorPointer, &mother);
-    //     } while (mother->getSex() == "女");
-    //     (*person)->setMother(mother);
-    // } else {
-    // }
-    // cout << "父亲名称或母亲名称" << endl;
-    // pPointer parent;
-    // findPerson(vectorPointer, &parent);
 }
 
 bool deleteRelation(pPointers vectorPointer, pPointer *person) {
@@ -381,16 +276,16 @@ bool deleteRelation(pPointers vectorPointer, pPointer *person) {
     }
     switch (relationIndex) {
         case 1:
-            (*person)->cleanFather(false);
+            (*person)->cleanFather();
             break;
         case 2:
-            (*person)->cleanMother(false);
+            (*person)->cleanMother();
             break;
         case 3:
             (*person)->cleanSpouse(false);
             break;
         case 4:
-            (*person)->cleanBrother(false);
+            (*person)->cleanBrother();
             break;
         case 5:
             (*person)->cleanChild(false);
@@ -434,16 +329,12 @@ bool showPersons(pPointers vectorPointer) {
     if (begin == end) {
         return false;
     }
-    cout << "姓名"
-         << "     ";
-    cout << "性别"
-         << "     ";
-    cout << "ID"
-         << "     ";
-    cout << "出生日期"
-         << "     ";
-    cout << "死亡日期"
-         << "     ";
+    cout << left;
+    cout << setw(10) << "姓名";
+    cout << setw(10) << "性别";
+    cout << setw(15) << "职业";
+    cout << setw(25) << "出生日期";
+    cout << setw(25) << "死亡日期";
     cout << endl;
     while (begin != end) {
         pPointer person = *begin;
@@ -456,22 +347,69 @@ bool showPersons(pPointers vectorPointer) {
 
 void showFamily(pPointer person) {
     cout << "只能显示3代" << endl;
-    cout << "称呼"
-         << "     ";
-    cout << "姓名"
-         << "     ";
-    cout << "性别"
-         << "     ";
-    cout << "ID"
-         << "     ";
-    cout << "出生日期"
-         << "     ";
-    cout << "死亡日期"
-         << "     ";
+    cout << left;
+    cout << setw(10) << "称呼";
+    cout << setw(10) << "姓名";
+    cout << setw(10) << "性别";
+    cout << setw(10) << "职业";
+    cout << setw(25) << "出生日期";
+    cout << setw(25) << "死亡日期";
     cout << endl;
     person->showFamily();
     pause();
 }
+
+double countAverageAge(pPointers vectorPointer) {
+    vector<pPointer>::iterator begin = vectorPointer->begin();
+    vector<pPointer>::iterator end = vectorPointer->end();
+    double average = 0;
+    while (begin != end) {
+        pPointer currentPerson = *begin;
+        average += currentPerson->getAge();
+        begin++;
+    }
+    average /= vectorPointer->size();
+    cout << "平均年龄为" << average << endl;
+    pause();
+    return average;
+}
+
+double getCommonmultiple(int m, int n) {
+    int r, t;
+    int a = m;  //先把m、n保存一份
+    int b = n;
+    if (m < n) {
+        t = m;  //用分号
+        m = n;  //用分号
+        n = t;
+    }
+    while ((r = m % n) != 0) {
+        m = n;
+        n = r;
+    }
+    return a * b / n;
+}
+
+void countGenderRatio(pPointers vectorPointer) {
+    vector<pPointer>::iterator begin = vectorPointer->begin();
+    vector<pPointer>::iterator end = vectorPointer->end();
+    int male = 0;
+    int female = 0;
+    while (begin != end) {
+        pPointer currentPerson = *begin;
+        if (currentPerson->getSex() == "男") {
+            male++;
+        } else {
+            female++;
+        }
+        begin++;
+    }
+    double leastCommonMultiple = getCommonmultiple(male, female);
+    cout << "男女比例为" << male / leastCommonMultiple << " : "
+         << female / leastCommonMultiple << endl;
+    pause();
+}
+
 int main(void) {
     pPointers vectorPointer = initiatePerson();
     pPointer person;
@@ -510,9 +448,15 @@ int main(void) {
                 findPerson(vectorPointer, &person);
                 break;
             case 9:
+                countAverageAge(vectorPointer);
+                break;
+            case 10:
+                countGenderRatio(vectorPointer);
+                break;
+            case 11:
                 savePerson(vectorPointer);
                 return 0;
-            case 10:
+            case 12:
                 return 0;
         }
         clearScreen();
@@ -528,8 +472,10 @@ int main(void) {
         cout << "(6)删除人员" << endl;
         cout << "(7)删除关系" << endl;
         cout << "(8)更换登录人员" << endl;
-        cout << "(9)保存并退出" << endl;
-        cout << "(10)退出不保存" << endl;
+        cout << "(9)统计年龄" << endl;
+        cout << "(10)统计男女比例" << endl;
+        cout << "(11)保存并退出" << endl;
+        cout << "(12)退出不保存" << endl;
     } while (cin >> operation);
     return 0;
 }
