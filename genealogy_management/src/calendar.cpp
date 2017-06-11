@@ -28,6 +28,8 @@ class Calendar {
             this->day = 0;
             return false;
         } else if (tempYear > this->currentYear) {
+            cout << tempYear << endl;
+            cout << currentYear << endl;
             cout << "请输入一个小于当前年份的年" << endl;
         } else {
             this->year = tempYear;
@@ -35,7 +37,8 @@ class Calendar {
         cout << "请输入月份,1到12月之间" << endl;
         while (cin >> tempMonth) {
             if (tempMonth >= 1 && tempMonth <= 12) {
-                if (tempMonth > this->currentMonth) {
+                if (tempYear == this->currentYear &&
+                    tempMonth > this->currentMonth) {
                     cout << "请输入一个小于当前月份的月" << endl;
                 } else {
                     this->month = tempMonth;
@@ -49,7 +52,9 @@ class Calendar {
         while (cin >> tempDay) {
             if (tempDay >= 1 && tempDay <= 31) {
                 if (judgeLegalDate(tempYear, tempMonth, tempDay)) {
-                    if (tempDay > this->currentDay) {
+                    if (tempYear == this->currentYear &&
+                        tempMonth == this->currentMonth &&
+                        tempDay > this->currentDay) {
                         cout << "请输入一个小于当前日期的日" << endl;
                     } else {
                         this->day = tempDay;
@@ -97,9 +102,9 @@ class Calendar {
         time_t now_time;
         now_time = time(NULL);
         tm *currentTime = localtime(&now_time);
-        this->year = currentTime->tm_year + 1900;
-        this->month = currentTime->tm_mon + 1;
-        this->day = currentTime->tm_mday;
+        this->currentYear = currentTime->tm_year + 1900;
+        this->currentMonth = currentTime->tm_mon + 1;
+        this->currentDay = currentTime->tm_mday;
     }
     bool isLeapYear(int year) {
         if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)) {

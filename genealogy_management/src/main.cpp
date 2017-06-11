@@ -8,7 +8,6 @@ using namespace std;
 #define FILE_PERSON_NAME "../test/person.dat"
 #define FILE_OCCUPATION_NAME "../test/occupation.dat"
 #define pPointers vector<pPointer> *
-#define oPointers vector<oPointer> *
 #define FEMALE "女"
 #define MALE "男"
 
@@ -182,6 +181,7 @@ bool addPerson(pPointers vectorPointer, pPointer *person) {
     p->editBirthDay();
     p->editDeathDay();
     p->editOccupation();
+    p->setHasDelete(false);
     p->setSID(-1);
     p->setFID(-1);
     p->setMID(-1);
@@ -193,26 +193,30 @@ bool addPerson(pPointers vectorPointer, pPointer *person) {
     return true;
 }
 
-bool deletePerson(pPointers vectorPointer, pPointer *person) {
+bool deletePerson(pPointers *vectorPointer, pPointer *person) {
     int relationIndex;
     cout << "请输入要删除的人物(若删除的配偶将会把孩子一并删除)" << endl;
     pPointer deletePerson;
-    findPerson(vectorPointer, &deletePerson);
-    //如果删除人物为当前登录人员，需重新设定当前登录人员
-    if (deletePerson == *person) {
-        vector<pPointer>::iterator begin = vectorPointer->begin();
-        vector<pPointer>::iterator end = vectorPointer->end();
-        cout << "删除人物为当前登录人员，系统自动设定当前登录人员" << endl;
-        while (begin != end) {
-            if (*begin == *person) {
-                vectorPointer->erase(begin);
-            }
-            begin++;
-            break;
-        }
-        *person = *(vectorPointer->begin());
+    if (!findPerson(*vectorPointer, &deletePerson)) {
+        pause();
+        return false;
     }
     deletePerson->deletePerson();
+    vector<pPointer>::iterator begin = (*vectorPointer)->begin();
+    vector<pPointer>::iterator end = (*vectorPointer)->end();
+    pPointers newVectorPointer = new vector<pPointer>();
+    while (begin != end) {
+        if ((*begin)->getHasDelete() == false) {
+            newVectorPointer->push_back(*begin);
+        }
+        begin++;
+    }
+    *vectorPointer = newVectorPointer;
+    //如果删除人物为当前登录人员，需重新设定当前登录人员
+    if (deletePerson == *person) {
+        cout << "删除人物为当前登录人员，系统自动设定当前登录人员" << endl;
+        *person = *((*vectorPointer)->begin());
+    }
     pause();
     return true;
 }
@@ -233,7 +237,10 @@ void addRelation(pPointers vectorPointer, pPointer *person) {
         return;
     }
     pPointer otherPerson;
-    findPerson(vectorPointer, &otherPerson);
+    if (!findPerson(vectorPointer, &otherPerson)) {
+        pause();
+        return;
+    }
     if (otherPerson == NULL || otherPerson == *person) {
         cout << "非法输入或不能使与自己添加关系" << endl;
         return;
@@ -332,9 +339,10 @@ bool showPersons(pPointers vectorPointer) {
     cout << left;
     cout << setw(10) << "姓名";
     cout << setw(10) << "性别";
-    cout << setw(15) << "职业";
-    cout << setw(25) << "出生日期";
-    cout << setw(25) << "死亡日期";
+    cout << setw(20) << "职业";
+    cout << left;
+    cout << setw(30) << "出生日期";
+    cout << setw(30) << "死亡日期";
     cout << endl;
     while (begin != end) {
         pPointer person = *begin;
@@ -351,9 +359,10 @@ void showFamily(pPointer person) {
     cout << setw(10) << "称呼";
     cout << setw(10) << "姓名";
     cout << setw(10) << "性别";
-    cout << setw(10) << "职业";
-    cout << setw(25) << "出生日期";
-    cout << setw(25) << "死亡日期";
+    cout << setw(20) << "职业";
+    cout << setw(30) << "出生日期";
+    cout << left;
+    cout << setw(30) << "死亡日期";
     cout << endl;
     person->showFamily();
     pause();
@@ -374,7 +383,7 @@ double countAverageAge(pPointers vectorPointer) {
     return average;
 }
 
-double getCommonmultiple(int m, int n) {
+double getCommonmultiple(double m, double n) {
     int r, t;
     int a = m;  //先把m、n保存一份
     int b = n;
@@ -383,7 +392,7 @@ double getCommonmultiple(int m, int n) {
         m = n;  //用分号
         n = t;
     }
-    while ((r = m % n) != 0) {
+    while ((r = (int)m % (int)n) != 0) {
         m = n;
         n = r;
     }
@@ -393,8 +402,8 @@ double getCommonmultiple(int m, int n) {
 void countGenderRatio(pPointers vectorPointer) {
     vector<pPointer>::iterator begin = vectorPointer->begin();
     vector<pPointer>::iterator end = vectorPointer->end();
-    int male = 0;
-    int female = 0;
+    double male = 0;
+    double female = 0;
     while (begin != end) {
         pPointer currentPerson = *begin;
         if (currentPerson->getSex() == "男") {
@@ -405,8 +414,17 @@ void countGenderRatio(pPointers vectorPointer) {
         begin++;
     }
     double leastCommonMultiple = getCommonmultiple(male, female);
-    cout << "男女比例为" << male / leastCommonMultiple << " : "
-         << female / leastCommonMultiple << endl;
+    cout << "男女比例为";
+    male /= leastCommonMultiple;
+    female /= leastCommonMultiple;
+    while (male < 1 || female < 1) {
+        male *= 10;
+        female *= 10;
+    }
+    cout << male;
+    cout << " : ";
+    cout << female;
+    cout << endl;
     pause();
 }
 
@@ -439,7 +457,7 @@ int main(void) {
                 addRelation(vectorPointer, &person);
                 break;
             case 6:
-                deletePerson(vectorPointer, &person);
+                deletePerson(&vectorPointer, &person);
                 break;
             case 7:
                 deleteRelation(vectorPointer, &person);
