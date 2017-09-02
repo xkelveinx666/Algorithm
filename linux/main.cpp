@@ -12,7 +12,6 @@
 #define HELP "myhelp"
 #define EXIT "myexit"
 using namespace std;
-
 mfPointer initiate() {
     char currentPathArray[PATH_MAX];
     if (realpath("./", currentPathArray) == NULL) {
@@ -44,11 +43,11 @@ int main(void) {
         } else if (command == CD) {
             myCD(currentStatemnt, &currentPath);
         } else if (command == COPY) {
-            myCopy();
+            myCopy(currentStatemnt, &currentPath);
         } else if (command == DEL) {
             // myDel();
         } else if (command == PWD) {
-            cout << currentPath->getLocation() << endl;
+            currentPath->showLocation();
         } else if (command == EXIT) {
             return 0;
         } else {

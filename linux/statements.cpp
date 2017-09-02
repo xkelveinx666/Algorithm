@@ -39,11 +39,38 @@ class Statements {
             }
         }
     }
-    string changToAbsolute(mfPointer currentPath) {
-        size_t bopPoint = this->backupOriginalPath.find_first_of("./");
-        size_t btpPoint = this->backupTargetPath.find_first_of("./");
+    void changToAbsolute(mfPointer currentPath) {
+        size_t bopPoint = this->backupOriginalPath.find("./");
+        size_t btpPoint = this->backupTargetPath.find("./");
+        if (((int)(bopPoint) >= 0)) {
+            bopPoint = this->backupOriginalPath.find_first_of("./");
+            this->originalPath = currentPath->getLocation();
+            this->originalPath.append(this->backupOriginalPath.substr(
+                bopPoint + 2, this->backupOriginalPath.length() - bopPoint));
+        }
+        if (((int)(btpPoint) >= 0)) {
+            btpPoint = this->backupTargetPath.find_first_of("./");
+            this->targetPath = currentPath->getLocation();
+            this->targetPath.append(this->backupTargetPath.substr(
+                btpPoint + 2, this->backupTargetPath.length() - btpPoint));
+        }
+        // int cpLength = currentPath->getLocation().length();
+        // bopPoint = 0;
+        // size_t clPoint = cpLength;
+        // while (bopPoint = this->backupOriginalPath.find("../", bopPoint) + 3
+        // &&
+        //                   bopPoint >= 0) {
+        //     string currentLocation = currentPath->getLocation();
+        //     clPoint = currentLocation.find_first_not_of("/", clPoint - 1);
+        // }
+        // if (clPoint != cpLength) {
+        //     this->originalPath = currentPath->getLocation().substr(0,
+        //     clPoint);
+        //     this->originalPath.append(this->backupOriginalPath.substr(
+        //         bopPoint, this->backupOriginalPath.length() - bopPoint));
+        // }
     }
-    string changeToRelative(mfPointer currentPath) {}
+    void changeToRelative(mfPointer currentPath) {}
     string getCommand() { return this->command; }
     string getTargetPath() { return this->targetPath; }
     string getOriginalPath() { return this->originalPath; }
@@ -62,9 +89,9 @@ class Statements {
 
   private:
     string trim(string stm) {
-        size_t start = stm.find_first_not_of(" ");
-        size_t end = stm.find_last_not_of(" ");
-        return stm.substr(start, end + 1);
+        size_t start = stm.find_first_not_of(' ');
+        size_t end = stm.find_last_not_of(' ');
+        return stm.substr(start, end - start + 1);
     }
     vcPointer split(string stm, char pattern) {
         size_t startIndex = 0;
@@ -72,10 +99,10 @@ class Statements {
         vcPointer vec = new vector<string>();
         while ((int)(startIndex) <= stm.length() && (int)(startIndex) != -1) {
             endIndex = stm.find_first_of(pattern, startIndex);
-            if ((int)(endIndex) == -1) {
+            if ((int)(endIndex) <= 0) {
                 endIndex = stm.length();
             }
-            vec->push_back(stm.substr(startIndex, endIndex));
+            vec->push_back(stm.substr(startIndex, endIndex - startIndex));
             startIndex = stm.find_first_not_of(pattern, endIndex);
         }
         return vec;

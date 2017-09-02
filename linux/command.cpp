@@ -26,16 +26,30 @@ void myHelp() {
 void myDir() { cout << "mydir" << endl; }
 
 void myCD(stPointer statements, mfPointer *currentPath) {
-    if ((statements->getCommand() != CD ||
-         !statements->getTargetPath().empty()) &&
-        (statements->getOriginalPath().empty())) {
+    if (statements->getCommand() == CD &&
+        !statements->getOriginalPath().empty() &&
+        statements->getTargetPath().empty()) {
+        *currentPath = new MyFile(statements->getOriginalPath());
+        (*currentPath)->showLocation();
+    } else {
         cout << "该命令格式有误,非" << CD << "命令" << endl;
         return;
     }
-    *currentPath = new MyFile(statements->getOriginalPath());
 }
 
-void myCopy() { cout << "mycopy" << endl; }
+void myCopy(stPointer statements, mfPointer *currentPath) {
+    if (statements->getCommand() == COPY &&
+        !statements->getTargetPath().empty() &&
+        !statements->getOriginalPath().empty()) {
+        statements->showStatements();
+        cout << "mycopy" << endl;
+        statements->changToAbsolute(*currentPath);
+        statements->showStatements();
+    } else {
+        cout << "该命令格式有误,非" << COPY << "命令" << endl;
+        return;
+    }
+}
 // void myDel() {
 //     mfPointer mf = new MyFile("test/123");
 //     cout << mf->getLocation() << endl;
