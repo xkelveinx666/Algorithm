@@ -38,13 +38,14 @@ void myCD(stPointer statements, mfPointer *currentPath) {
 }
 
 void myCopy(stPointer statements, mfPointer *currentPath) {
+    // statements->showStatements();
     if (statements->getCommand() == COPY &&
         !statements->getTargetPath().empty() &&
         !statements->getOriginalPath().empty()) {
-        statements->showStatements();
+        // statements->showStatements();
         cout << "mycopy" << endl;
-        statements->changToAbsolute(*currentPath);
-        statements->showStatements();
+        // statements->changToAbsolute(*currentPath);
+        // statements->showStatements();
     } else {
         cout << "该命令格式有误,非" << COPY << "命令" << endl;
         return;

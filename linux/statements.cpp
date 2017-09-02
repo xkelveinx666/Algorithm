@@ -21,18 +21,10 @@ class Statements {
                 this->command = *begin;
                 break;
             case 1:
-                if (!judgePath(*begin)) {
-                    return;
-                }
                 this->backupOriginalPath = *begin;
                 this->originalPath = *begin;
                 break;
             case 2:
-                if (!judgePath(*begin)) {
-                    this->backupOriginalPath = "";
-                    this->originalPath = "";
-                    return;
-                }
                 this->backupTargetPath = *begin;
                 this->targetPath = *begin;
                 break;
@@ -123,6 +115,17 @@ class Statements {
         cout << "originalPath = " << this->originalPath << endl;
         cout << "targetPath = " << this->targetPath << endl;
     }
+    bool exists() {
+        if (!(this->originalPath.empty()) && !isPath(this->originalPath)) {
+            cout << this->originalPath << "该路径不合法或不存在" << endl;
+            return false;
+        } else if (!(this->targetPath.empty()) && !isPath(this->targetPath)) {
+            cout << this->targetPath << "该路径不合法或不存在" << endl;
+            return false;
+        } else {
+            return true;
+        }
+    }
 
   private:
     string trim(string stm) {
@@ -144,11 +147,10 @@ class Statements {
         }
         return vec;
     }
-    bool judgePath(string path) {
+    bool isPath(string path) {
         if (ifstream(path)) {
             return true;
         } else {
-            cout << path << "路径不存在" << endl;
             return false;
         }
     }
