@@ -52,6 +52,13 @@ class Statements {
     void setOriginalPath(string originalPath) {
         this->originalPath = originalPath;
     }
+    void showStatements() {
+        cout << "command = " << this->command << endl;
+        cout << "backupOriginalPath = " << this->backupOriginalPath << endl;
+        cout << "backupTargetPath = " << this->backupTargetPath << endl;
+        cout << "originalPath = " << this->originalPath << endl;
+        cout << "targetPath = " << this->targetPath << endl;
+    }
 
   private:
     string trim(string stm) {
