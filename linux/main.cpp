@@ -19,6 +19,7 @@ mfPointer initiate() {
         return NULL;
     } else {
         string pwd(currentPathArray);
+        pwd.append("/");
         mfPointer currentPath = new MyFile(pwd);
         return currentPath;
     }

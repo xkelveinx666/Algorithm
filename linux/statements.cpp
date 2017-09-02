@@ -40,35 +40,72 @@ class Statements {
         }
     }
     void changToAbsolute(mfPointer currentPath) {
-        size_t bopPoint = this->backupOriginalPath.find("./");
-        size_t btpPoint = this->backupTargetPath.find("./");
-        if (((int)(bopPoint) >= 0)) {
-            bopPoint = this->backupOriginalPath.find_first_of("./");
-            this->originalPath = currentPath->getLocation();
-            this->originalPath.append(this->backupOriginalPath.substr(
-                bopPoint + 2, this->backupOriginalPath.length() - bopPoint));
+        size_t bopPoint = 0;
+        size_t btpPoint = 0;
+        int cpLength = currentPath->getLocation().length();
+        //先判断是否有放回上一级的字符
+        size_t clPoint = cpLength;
+        bopPoint = this->backupOriginalPath.find("../", bopPoint);
+        if ((int)bopPoint >= 0) {
+            int backBopPoint = 0;
+            while ((int)bopPoint >= 0) {
+                backBopPoint = bopPoint;
+                bopPoint += 3;
+                clPoint =
+                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                bopPoint = this->backupOriginalPath.find("../", bopPoint);
+            }
+            if (clPoint != cpLength) {
+                clPoint =
+                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                this->originalPath =
+                    currentPath->getLocation().substr(0, clPoint + 1);
+                bopPoint = backBopPoint + 3;
+                this->originalPath.append(this->backupOriginalPath.substr(
+                    bopPoint, this->backupOriginalPath.length() - bopPoint));
+            }
+        } else {
+            //判断是否含有当前文件夹的字符
+            bopPoint = this->backupOriginalPath.find("./");
+            if (((int)(bopPoint) >= 0)) {
+                bopPoint = this->backupOriginalPath.find_first_of("./");
+                this->originalPath = currentPath->getLocation();
+                this->originalPath.append(currentPath->getFileName());
+                this->originalPath.append(this->backupOriginalPath.substr(
+                    bopPoint + 2,
+                    this->backupOriginalPath.length() - bopPoint));
+            }
         }
-        if (((int)(btpPoint) >= 0)) {
-            btpPoint = this->backupTargetPath.find_first_of("./");
-            this->targetPath = currentPath->getLocation();
-            this->targetPath.append(this->backupTargetPath.substr(
-                btpPoint + 2, this->backupTargetPath.length() - btpPoint));
+        btpPoint = this->backupTargetPath.find("../", btpPoint);
+        clPoint = cpLength;
+        if ((int)btpPoint >= 0) {
+            int backBtpPoint = 0;
+            while ((int)btpPoint >= 0) {
+                backBtpPoint = btpPoint;
+                btpPoint += 3;
+                clPoint =
+                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                btpPoint = this->backupTargetPath.find("../", btpPoint);
+            }
+            if (clPoint != cpLength) {
+                clPoint =
+                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                this->targetPath =
+                    currentPath->getLocation().substr(0, clPoint + 1);
+                btpPoint = backBtpPoint + 3;
+                this->targetPath.append(this->backupTargetPath.substr(
+                    btpPoint, this->backupTargetPath.length() - btpPoint));
+            }
+        } else {
+            btpPoint = this->backupTargetPath.find("./");
+            if (((int)(btpPoint) >= 0)) {
+                btpPoint = this->backupTargetPath.find_first_of("./");
+                this->targetPath = currentPath->getLocation();
+                this->targetPath.append(currentPath->getFileName());
+                this->targetPath.append(this->backupTargetPath.substr(
+                    btpPoint + 2, this->backupTargetPath.length() - btpPoint));
+            }
         }
-        // int cpLength = currentPath->getLocation().length();
-        // bopPoint = 0;
-        // size_t clPoint = cpLength;
-        // while (bopPoint = this->backupOriginalPath.find("../", bopPoint) + 3
-        // &&
-        //                   bopPoint >= 0) {
-        //     string currentLocation = currentPath->getLocation();
-        //     clPoint = currentLocation.find_first_not_of("/", clPoint - 1);
-        // }
-        // if (clPoint != cpLength) {
-        //     this->originalPath = currentPath->getLocation().substr(0,
-        //     clPoint);
-        //     this->originalPath.append(this->backupOriginalPath.substr(
-        //         bopPoint, this->backupOriginalPath.length() - bopPoint));
-        // }
     }
     void changeToRelative(mfPointer currentPath) {}
     string getCommand() { return this->command; }
