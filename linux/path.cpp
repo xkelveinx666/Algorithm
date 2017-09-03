@@ -18,7 +18,6 @@ class Path {
         transferLocatoin();
     }
     void nextFolder(string folder) {
-        this->fullPath.append("/");
         this->fullPath.append(folder);
         this->fullPath.append("/");
         transferLocatoin();
@@ -30,6 +29,12 @@ class Path {
     string getLocation() { return this->location; }
     string getLastName() { return this->lastName; }
     string getFullPath() { return this->fullPath; }
+    string getFilePath() {
+        return this->fullPath.substr(0, fullPath.length() - 1);
+    }
+    string getFileName() {
+        return this->lastName.substr(1, lastName.length() - 1);
+    }
     void setLocation(string location) { this->location = location; }
     void setLastName(string lastName) { this->lastName = lastName; }
     void showLocation() {

@@ -20,7 +20,8 @@ using namespace std;
 
 vcPointer listFiles(string path);
 void showFiles(vcPointer files);
-void dfsFolder(pPointer tPath, pPointer oPath);
+void dfsFolder(pPointer oPath, pPointer tPath, int *count);
+bool copyFile(pPointer oPath, pPointer tPath);
 void myHelp() {
     clearScreen();
     cout << MY_DIR << "列出目录及文件" << endl;
@@ -68,7 +69,9 @@ void myCopy(stPointer statements, pPointer *currentPath) {
         pPointer tPath = new Path(statements->getTargetPath());
         pPointer oPath = new Path(statements->getOriginalPath());
         if (tPath->isFolder()) {
-            dfsFolder(tPath, oPath);
+            int failCount = 0;
+            dfsFolder(tPath, oPath, &failCount);
+            cout << failCount << "个文件复制失败" << endl;
         } else {
             cout << "目的地路径必须为文件夹" << endl;
         }
@@ -169,7 +172,7 @@ void showFiles(vcPointer files) {
     }
 }
 
-void dfsFolder(pPointer tPath, pPointer oPath) {
+void dfsFolder(pPointer oPath, pPointer tPath, int *count) {
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir(oPath->getFullPath().c_str())) != NULL) {
@@ -178,12 +181,14 @@ void dfsFolder(pPointer tPath, pPointer oPath) {
             if (ent->d_name[0] != '.') {
                 pPointer newOPath = new Path(oPath->getFullPath());
                 newOPath->nextFolder(string(ent->d_name));
+                pPointer newTPath = new Path(tPath->getFullPath());
+                newTPath->nextFolder(string(ent->d_name));
                 if (newOPath->isFolder()) {
-                    pPointer newTPath = new Path(tPath->getFullPath());
-                    newTPath->nextFolder(string(ent->d_name));
-                    dfsFolder(newTPath, newOPath);
+                    dfsFolder(newOPath, newTPath, count);
                 } else {
-                    cout << ent->d_name << endl;
+                    if (!copyFile(newOPath, newTPath)) {
+                        (*count)++;
+                    }
                 }
             }
         }
@@ -193,21 +198,26 @@ void dfsFolder(pPointer tPath, pPointer oPath) {
         perror("");
     }
 }
-
-void copyFile(pPointer originalFile, pPointer targetFile) {
+bool copyFile(pPointer originalFile, pPointer targetFile) {
     ifstream in;
     ofstream out;
-    in.open(originalFile->getFullPath().c_str(), ios::binary);
+    in.open(originalFile->getFilePath().c_str(), ios::binary);
     if (in.fail()) {
         in.close();
         out.close();
-        cout << "打开文件" << originalFile->getLastName() << endl;
+        cout << "打开文件失败" << originalFile->getFileName() << endl;
+        return false;
     }
-    out.open(targetFile->getFullPath().c_str(), ios::binary);
+    out.open(targetFile->getFilePath().c_str(), ios::binary);
     if (out.fail()) //创建文件失败
     {
-        cout << "创建文件失败" << targetFile->getLastName() << endl;
+        cout << "创建文件失败" << targetFile->getFileName() << endl;
         out.close();
         in.close();
+        return false;
     }
+    out << in.rdbuf();
+    out.close();
+    in.close();
+    return true;
 }
