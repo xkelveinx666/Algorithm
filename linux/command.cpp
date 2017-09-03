@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <sys/stat.h>
 #include <vector>
 #define MY_DIR "mydir"
 #define MY_CD "mycd"
@@ -20,6 +21,7 @@ using namespace std;
 
 vcPointer listFiles(string path);
 void showFiles(vcPointer files);
+bool isFolder(string path);
 void myHelp() {
     clearScreen();
     cout << MY_DIR << "列出目录及文件" << endl;
@@ -46,8 +48,16 @@ void myCD(stPointer statements, mfPointer *currentPath) {
     if (statements->getCommand() == MY_CD &&
         !statements->getOriginalPath().empty() &&
         statements->getTargetPath().empty()) {
-        *currentPath = new MyFile(statements->getOriginalPath());
-        (*currentPath)->showLocation();
+        string oPath = statements->getOriginalPath();
+        if (isFolder(oPath)) {
+            if (oPath[oPath.length() - 1] != '/') {
+                oPath.append("/");
+            }
+            *currentPath = new MyFile(oPath);
+            (*currentPath)->showLocation();
+        } else {
+            cout << "该路径不是文件夹，不能切换目录到文件" << endl;
+        }
     } else {
         cout << "该命令格式有误,非" << MY_CD << "命令" << endl;
         return;
@@ -155,5 +165,15 @@ void showFiles(vcPointer files) {
         if (index % 5 != 0) {
             cout << endl;
         }
+    }
+}
+
+bool isFolder(string path) {
+    struct stat st;
+    stat(path.c_str(), &st);
+    if (S_ISDIR(st.st_mode)) {
+        return 1;
+    } else {
+        return 0;
     }
 }
