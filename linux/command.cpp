@@ -194,13 +194,20 @@ void dfsFolder(pPointer tPath, pPointer oPath) {
     }
 }
 
-// void copyFile(pPointer originalFile, pPointer targetFile) {
-//     ifstream in;
-//     ofstream out;
-//     in.open(originalFile, ios::binary);
-//     if (in.fail()) {
-//         in.close();
-//         out.close();
-//         cout << "打开文件" << originalFile << endl;
-//     }
-// }
+void copyFile(pPointer originalFile, pPointer targetFile) {
+    ifstream in;
+    ofstream out;
+    in.open(originalFile->getFullPath().c_str(), ios::binary);
+    if (in.fail()) {
+        in.close();
+        out.close();
+        cout << "打开文件" << originalFile->getLastName() << endl;
+    }
+    out.open(targetFile->getFullPath().c_str(), ios::binary);
+    if (out.fail()) //创建文件失败
+    {
+        cout << "创建文件失败" << targetFile->getLastName() << endl;
+        out.close();
+        in.close();
+    }
+}
