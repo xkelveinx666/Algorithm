@@ -34,7 +34,7 @@ class Statements {
     void changToAbsolute(mfPointer currentPath) {
         size_t bopPoint = 0;
         size_t btpPoint = 0;
-        int cpLength = currentPath->getLocation().length();
+        int cpLength = currentPath->getFullPath().length();
         //先判断是否有放回上一级的字符
         size_t clPoint = cpLength;
         bopPoint = this->backupOriginalPath.find("../", bopPoint);
@@ -44,14 +44,14 @@ class Statements {
                 backBopPoint = bopPoint;
                 bopPoint += 3;
                 clPoint =
-                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                    currentPath->getFullPath().find_last_of("/", clPoint - 1);
                 bopPoint = this->backupOriginalPath.find("../", bopPoint);
             }
             if (clPoint != cpLength) {
                 clPoint =
-                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                    currentPath->getFullPath().find_last_of("/", clPoint - 1);
                 this->originalPath =
-                    currentPath->getLocation().substr(0, clPoint + 1);
+                    currentPath->getFullPath().substr(0, clPoint + 1);
                 bopPoint = backBopPoint + 3;
                 this->originalPath.append(this->backupOriginalPath.substr(
                     bopPoint, this->backupOriginalPath.length() - bopPoint));
@@ -61,8 +61,7 @@ class Statements {
             bopPoint = this->backupOriginalPath.find("./");
             if (((int)(bopPoint) >= 0)) {
                 bopPoint = this->backupOriginalPath.find_first_of("./");
-                this->originalPath = currentPath->getLocation();
-                this->originalPath.append(currentPath->getFileName());
+                this->originalPath = currentPath->getFullPath();
                 this->originalPath.append(this->backupOriginalPath.substr(
                     bopPoint + 2,
                     this->backupOriginalPath.length() - bopPoint));
@@ -76,14 +75,14 @@ class Statements {
                 backBtpPoint = btpPoint;
                 btpPoint += 3;
                 clPoint =
-                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                    currentPath->getFullPath().find_last_of("/", clPoint - 1);
                 btpPoint = this->backupTargetPath.find("../", btpPoint);
             }
             if (clPoint != cpLength) {
                 clPoint =
-                    currentPath->getLocation().find_last_of("/", clPoint - 1);
+                    currentPath->getFullPath().find_last_of("/", clPoint - 1);
                 this->targetPath =
-                    currentPath->getLocation().substr(0, clPoint + 1);
+                    currentPath->getFullPath().substr(0, clPoint + 1);
                 btpPoint = backBtpPoint + 3;
                 this->targetPath.append(this->backupTargetPath.substr(
                     btpPoint, this->backupTargetPath.length() - btpPoint));
@@ -92,8 +91,7 @@ class Statements {
             btpPoint = this->backupTargetPath.find("./");
             if (((int)(btpPoint) >= 0)) {
                 btpPoint = this->backupTargetPath.find_first_of("./");
-                this->targetPath = currentPath->getLocation();
-                this->targetPath.append(currentPath->getFileName());
+                this->targetPath = currentPath->getFullPath();
                 this->targetPath.append(this->backupTargetPath.substr(
                     btpPoint + 2, this->backupTargetPath.length() - btpPoint));
             }

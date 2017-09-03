@@ -34,6 +34,7 @@ int main(void) {
     }
     while (true) {
         string cmd;
+        currentPath->showCurrentFileName();
         getline(cin, cmd);
         stPointer currentStatemnt = new Statements(cmd);
         currentStatemnt->changToAbsolute(currentPath);
