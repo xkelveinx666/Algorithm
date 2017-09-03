@@ -31,7 +31,7 @@ class Statements {
             }
         }
     }
-    void changToAbsolute(mfPointer currentPath) {
+    void changToAbsolute(pPointer currentPath) {
         size_t bopPoint = 0;
         size_t btpPoint = 0;
         int cpLength = currentPath->getFullPath().length();
@@ -97,7 +97,7 @@ class Statements {
             }
         }
     }
-    void changeToRelative(mfPointer currentPath) {}
+    void changeToRelative(pPointer currentPath) {}
     string getCommand() { return this->command; }
     string getTargetPath() { return this->targetPath; }
     string getOriginalPath() { return this->originalPath; }

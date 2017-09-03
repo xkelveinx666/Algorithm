@@ -12,7 +12,7 @@
 #define MY_HELP "myhelp"
 #define MY_EXIT "myexit"
 using namespace std;
-mfPointer initiate() {
+pPointer initiate() {
     char currentPathArray[PATH_MAX];
     if (realpath("./", currentPathArray) == NULL) {
         cout << "当前系统环境不支持stdlib的realpath函数,将无法正常运行" << endl;
@@ -20,21 +20,21 @@ mfPointer initiate() {
     } else {
         string pwd(currentPathArray);
         pwd.append("/");
-        mfPointer currentPath = new MyFile(pwd);
+        pPointer currentPath = new Path(pwd);
         return currentPath;
     }
 }
 
 int main(void) {
     cout << "输入myhelp显示所有已支持命令" << endl;
-    mfPointer currentPath = initiate();
+    pPointer currentPath = initiate();
     stPointer currentStatemnt;
     if (currentPath == NULL) {
         return 0;
     }
     while (true) {
         string cmd;
-        currentPath->showCurrentFileName();
+        currentPath->showCurrentFolder();
         getline(cin, cmd);
         stPointer currentStatemnt = new Statements(cmd);
         currentStatemnt->changToAbsolute(currentPath);

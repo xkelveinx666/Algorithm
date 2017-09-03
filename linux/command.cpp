@@ -1,12 +1,12 @@
 #include "general.cpp"
-#include "myfile.cpp"
+#include "path.cpp"
 #include "statements.cpp"
 #include <cstdio>
 #include <dirent.h>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
-#include <sys/stat.h>
 #include <vector>
 #define MY_DIR "mydir"
 #define MY_CD "mycd"
@@ -15,13 +15,12 @@
 #define MY_PWD "mypwd"
 #define MY_HELP "myhelp"
 #define MY_EXIT "myexit"
-#define mfPointer MyFile *
 
 using namespace std;
 
 vcPointer listFiles(string path);
 void showFiles(vcPointer files);
-bool isFolder(string path);
+void dfsFolder(pPointer tPath, pPointer oPath);
 void myHelp() {
     clearScreen();
     cout << MY_DIR << "列出目录及文件" << endl;
@@ -44,16 +43,13 @@ void myDir(stPointer statements) {
     }
 }
 
-void myCD(stPointer statements, mfPointer *currentPath) {
+void myCD(stPointer statements, pPointer *currentPath) {
     if (statements->getCommand() == MY_CD &&
         !statements->getOriginalPath().empty() &&
         statements->getTargetPath().empty()) {
-        string oPath = statements->getOriginalPath();
-        if (isFolder(oPath)) {
-            if (oPath[oPath.length() - 1] != '/') {
-                oPath.append("/");
-            }
-            *currentPath = new MyFile(oPath);
+        pPointer oPath = new Path(statements->getOriginalPath());
+        if (oPath->isFolder()) {
+            *currentPath = oPath;
             (*currentPath)->showLocation();
         } else {
             cout << "该路径不是文件夹，不能切换目录到文件" << endl;
@@ -64,13 +60,18 @@ void myCD(stPointer statements, mfPointer *currentPath) {
     }
 }
 
-void myCopy(stPointer statements, mfPointer *currentPath) {
+void myCopy(stPointer statements, pPointer *currentPath) {
     // statements->showStatements();
     if (statements->getCommand() == MY_COPY &&
         !statements->getTargetPath().empty() &&
         !statements->getOriginalPath().empty()) {
-        // statements->showStatements();
-        cout << "mycopy" << endl;
+        pPointer tPath = new Path(statements->getTargetPath());
+        pPointer oPath = new Path(statements->getOriginalPath());
+        if (tPath->isFolder()) {
+            dfsFolder(tPath, oPath);
+        } else {
+            cout << "目的地路径必须为文件夹" << endl;
+        }
         // statements->changToAbsolute(*currentPath);
         // statements->showStatements();
     } else {
@@ -168,12 +169,38 @@ void showFiles(vcPointer files) {
     }
 }
 
-bool isFolder(string path) {
-    struct stat st;
-    stat(path.c_str(), &st);
-    if (S_ISDIR(st.st_mode)) {
-        return 1;
+void dfsFolder(pPointer tPath, pPointer oPath) {
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir(oPath->getFullPath().c_str())) != NULL) {
+        /* print all the files and directories within directory */
+        while ((ent = readdir(dir)) != NULL) {
+            if (ent->d_name[0] != '.') {
+                pPointer newOPath = new Path(oPath->getFullPath());
+                newOPath->nextFolder(string(ent->d_name));
+                if (newOPath->isFolder()) {
+                    pPointer newTPath = new Path(tPath->getFullPath());
+                    newTPath->nextFolder(string(ent->d_name));
+                    dfsFolder(newTPath, newOPath);
+                } else {
+                    cout << ent->d_name << endl;
+                }
+            }
+        }
+        closedir(dir);
     } else {
-        return 0;
+        /* could not open directory */
+        perror("");
     }
 }
+
+// void copyFile(pPointer originalFile, pPointer targetFile) {
+//     ifstream in;
+//     ofstream out;
+//     in.open(originalFile, ios::binary);
+//     if (in.fail()) {
+//         in.close();
+//         out.close();
+//         cout << "打开文件" << originalFile << endl;
+//     }
+// }
