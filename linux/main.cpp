@@ -4,13 +4,13 @@
 #include <cstring>
 #include <iostream>
 #include <string>
-#define DIR "mydir"
-#define CD "mycd"
-#define COPY "mycopy"
-#define DEL "mydel"
-#define PWD "mypwd"
-#define HELP "myhelp"
-#define EXIT "myexit"
+#define MY_DIR "mydir"
+#define MY_CD "mycd"
+#define MY_COPY "mycopy"
+#define MY_DEL "mydel"
+#define MY_PWD "mypwd"
+#define MY_HELP "myhelp"
+#define MY_EXIT "myexit"
 using namespace std;
 mfPointer initiate() {
     char currentPathArray[PATH_MAX];
@@ -42,19 +42,19 @@ int main(void) {
             continue;
         }
         string command = currentStatemnt->getCommand();
-        if (command == HELP) {
+        if (command == MY_HELP) {
             myHelp();
-        } else if (command == DIR) {
-            myDir();
-        } else if (command == CD) {
+        } else if (command == MY_DIR) {
+            myDir(currentStatemnt);
+        } else if (command == MY_CD) {
             myCD(currentStatemnt, &currentPath);
-        } else if (command == COPY) {
+        } else if (command == MY_COPY) {
             myCopy(currentStatemnt, &currentPath);
-        } else if (command == DEL) {
+        } else if (command == MY_DEL) {
             // myDel();
-        } else if (command == PWD) {
+        } else if (command == MY_PWD) {
             currentPath->showLocation();
-        } else if (command == EXIT) {
+        } else if (command == MY_EXIT) {
             return 0;
         } else {
             cout << "您输入的命令暂不支持" << endl;

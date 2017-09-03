@@ -1,56 +1,74 @@
 #include "general.cpp"
 #include "myfile.cpp"
 #include "statements.cpp"
+#include <cstdio>
+#include <dirent.h>
+#include <iomanip>
 #include <iostream>
-#define DIR "mydir"
-#define CD "mycd"
-#define COPY "mycopy"
-#define DEL "mydel"
-#define PWD "mypwd"
-#define HELP "myhelp"
-#define EXIT "myexit"
+#include <string>
+#include <vector>
+#define MY_DIR "mydir"
+#define MY_CD "mycd"
+#define MY_COPY "mycopy"
+#define MY_DEL "mydel"
+#define MY_PWD "mypwd"
+#define MY_HELP "myhelp"
+#define MY_EXIT "myexit"
 #define mfPointer MyFile *
 
 using namespace std;
 
+vcPointer listFiles(string path);
+void showFiles(vcPointer files);
 void myHelp() {
     clearScreen();
-    cout << DIR << "列出目录及文件" << endl;
-    cout << CD << "改变当前文件夹" << endl;
-    cout << COPY << "复制文件" << endl;
-    cout << DEL << "删除目录" << endl;
-    cout << PWD << "显示当前目录名" << endl;
-    cout << EXIT << "退出系统" << endl;
+    cout << MY_DIR << "列出目录及文件" << endl;
+    cout << MY_CD << "改变当前文件夹" << endl;
+    cout << MY_COPY << "复制文件" << endl;
+    cout << MY_DEL << "删除目录" << endl;
+    cout << MY_PWD << "显示当前目录名" << endl;
+    cout << MY_EXIT << "退出系统" << endl;
 }
 
-void myDir() { cout << "mydir" << endl; }
+void myDir(stPointer statements) {
+    if (statements->getCommand() == MY_DIR &&
+        !statements->getOriginalPath().empty() &&
+        statements->getTargetPath().empty()) {
+        vcPointer files = listFiles(statements->getOriginalPath());
+        showFiles(files);
+    } else {
+        cout << "该命令格式有误,非" << MY_DIR << "命令" << endl;
+        return;
+    }
+}
 
 void myCD(stPointer statements, mfPointer *currentPath) {
-    if (statements->getCommand() == CD &&
+    if (statements->getCommand() == MY_CD &&
         !statements->getOriginalPath().empty() &&
         statements->getTargetPath().empty()) {
         *currentPath = new MyFile(statements->getOriginalPath());
         (*currentPath)->showLocation();
     } else {
-        cout << "该命令格式有误,非" << CD << "命令" << endl;
+        cout << "该命令格式有误,非" << MY_CD << "命令" << endl;
         return;
     }
 }
 
 void myCopy(stPointer statements, mfPointer *currentPath) {
     // statements->showStatements();
-    if (statements->getCommand() == COPY &&
+    if (statements->getCommand() == MY_COPY &&
         !statements->getTargetPath().empty() &&
         !statements->getOriginalPath().empty()) {
-        statements->showStatements();
+        // statements->showStatements();
         cout << "mycopy" << endl;
-        statements->changToAbsolute(*currentPath);
-        statements->showStatements();
+        // statements->changToAbsolute(*currentPath);
+        // statements->showStatements();
     } else {
-        cout << "该命令格式有误,非" << COPY << "命令" << endl;
+        cout << "该命令格式有误,非" << MY_COPY << "命令" << endl;
         return;
     }
 }
+
 // void myDel() {
 //     mfPointer mf = new MyFile("test/123");
 //     cout << mf->getLocation() << endl;
@@ -58,11 +76,84 @@ void myCopy(stPointer statements, mfPointer *currentPath) {
 //     cout << "mydel" << endl;
 // }
 
-// void myPwd() {
-//     char current_absolute_path[PATH_MAX];
-//     if (realpath("./", current_absolute_path) == NULL) {
-//         cout << "当前系统环境不支持stdlib的realpath函数" << endl;
-//     } else {
-//         cout << "当前路径为" << current_absolute_path << endl;
+// void listFiles(string path) {
+//     vector<string> dirname;
+//     struct _finddata_t findFile;
+//     int end = 0;
+//     int start = _findfirst(path.c_str().& findFile);
+//     if (start == -1) {
+//         return;
 //     }
+//     while (!(done = _findnext(start, &findFile))) {
+//         if ((_A_SUBDIR == findFile.attrib)) {
+//             dirname.push_back(findFile.name);
+//         }
+//     }
+//     vector<string>::iterator begin = dirname.begin();
+//     vector<string>::iterator end = dirname.end();
+//     while (begin != end) {
+//         cout << *begin << endl;
+//     }
+//     _findclose(start);
 // }
+
+// void filesearch(string path, int layer) {
+//     int num = 0;
+//     string dirname[100] = {""};
+//     struct _finddata_t filefind;
+//     string curr = path + "\\*.*";
+//     int done = 0, i = 0, j, handle;
+//     if ((handle = _findfirst(curr.c_str(), &filefind)) == -1)
+//         return;
+//     while (!(done = _findnext(handle, &filefind))) {
+//         if ((_A_SUBDIR == filefind.attrib))
+//             dirname[num++] = filefind.name;
+//     }
+//     for (j = 0; j <= num; j++) {
+//         cout << dirname[j] << endl;
+//     }
+//     _findclose(handle);
+// }
+// int listfile() {
+//     string path = "D:\\Test";
+//     filesearch(path, 0);
+//     return 0;
+// }
+vcPointer listFiles(string path) {
+    vcPointer files = new vector<string>();
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir(path.c_str())) != NULL) {
+        /* print all the files and directories within directory */
+        while ((ent = readdir(dir)) != NULL) {
+            if (ent->d_name[0] != '.') {
+                files->push_back(ent->d_name);
+            }
+        }
+        closedir(dir);
+    } else {
+        /* could not open directory */
+        perror("");
+    }
+    return files;
+}
+
+void showFiles(vcPointer files) {
+    if (files != NULL) {
+        vector<string>::iterator begin = files->begin();
+        vector<string>::iterator end = files->end();
+        int index = 0;
+        cout << left;
+        while (begin != end) {
+            cout << setw(30) << *begin;
+            if (++index % 5 == 0) {
+                cout << endl;
+                cout << left;
+            }
+            begin++;
+        }
+        if (index % 5 != 0) {
+            cout << endl;
+        }
+    }
+}
