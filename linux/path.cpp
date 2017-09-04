@@ -10,10 +10,8 @@ class Path {
   public:
     Path(string pwd) {
         this->fullPath = pwd;
-        if (isFolder()) {
-            if (fullPath[fullPath.length() - 1] != '/') {
-                fullPath.append("/");
-            }
+        if (fullPath[fullPath.length() - 1] != '/') {
+            fullPath.append("/");
         }
         transferLocatoin();
     }

@@ -152,7 +152,7 @@ class Statements {
         return vec;
     }
     bool isPath(string path) {
-        if (ifstream(path)) {
+        if (ifstream(path.c_str())) {
             return true;
         } else {
             return false;

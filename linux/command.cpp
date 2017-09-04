@@ -100,8 +100,13 @@ void myDel(stPointer statements) {
         statements->getTargetPath().empty() && statements->exists()) {
         pPointer oPath = new Path(statements->getOriginalPath());
         int failCount = 0;
-        deleteFolder(oPath, &failCount);
-        rmdir(oPath->getFilePath().c_str());
+        if (oPath->isFolder()) {
+            deleteFolder(oPath, &failCount);
+            rmdir(oPath->getFilePath().c_str());
+        } else {
+            cout << oPath->getFilePath() << endl;
+            removeFile(oPath);
+        }
         cout << failCount << "个文件删除失败" << endl;
     } else {
         cout << "该命令格式有误,非" << MY_DEL << "命令" << endl;
