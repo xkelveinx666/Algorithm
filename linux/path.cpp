@@ -40,12 +40,11 @@ class Path {
     }
     void showLastName() { cout << "~" << this->lastName << ":"; }
     bool isFolder() {
-        struct stat st;
-        stat(fullPath.c_str(), &st);
-        if (S_ISDIR(st.st_mode)) {
-            return 1;
+        struct stat statbuf;
+        if (stat(fullPath.c_str(), &statbuf) == -1) {
+            return false;
         } else {
-            return 0;
+            return S_ISDIR(statbuf.st_mode);
         }
     }
 
