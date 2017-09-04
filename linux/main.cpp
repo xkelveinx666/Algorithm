@@ -49,9 +49,9 @@ int main(void) {
         } else if (command == MY_CD) {
             myCD(currentStatemnt, &currentPath);
         } else if (command == MY_COPY) {
-            myCopy(currentStatemnt, &currentPath);
+            myCopy(currentStatemnt);
         } else if (command == MY_DEL) {
-            // myDel();
+            myDel(currentStatemnt);
         } else if (command == MY_PWD) {
             currentPath->showLocation();
         } else if (command == MY_EXIT) {

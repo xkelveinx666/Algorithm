@@ -22,7 +22,8 @@ using namespace std;
 
 vcPointer listFiles(string path);
 void showFiles(vcPointer files);
-void dfsFolder(pPointer oPath, pPointer tPath, int *count);
+void copyFolder(pPointer oPath, pPointer tPath, int *count);
+void deleteFolder(pPointer oPath, int *count);
 bool copyFile(pPointer oPath, pPointer tPath);
 bool removeFile(pPointer file);
 void myHelp() {
@@ -64,8 +65,7 @@ void myCD(stPointer statements, pPointer *currentPath) {
     }
 }
 
-void myCopy(stPointer statements, pPointer *currentPath) {
-    // statements->showStatements();
+void myCopy(stPointer statements) {
     if (statements->getCommand() == MY_COPY &&
         !statements->getTargetPath().empty() &&
         !statements->getOriginalPath().empty()) {
@@ -73,25 +73,30 @@ void myCopy(stPointer statements, pPointer *currentPath) {
         pPointer oPath = new Path(statements->getOriginalPath());
         if (tPath->isFolder()) {
             int failCount = 0;
-            dfsFolder(oPath, tPath, &failCount);
+            copyFolder(oPath, tPath, &failCount);
             cout << failCount << "个文件复制失败" << endl;
         } else {
             cout << "目的地路径必须为文件夹" << endl;
         }
-        // statements->changToAbsolute(*currentPath);
-        // statements->showStatements();
     } else {
         cout << "该命令格式有误,非" << MY_COPY << "命令" << endl;
         return;
     }
 }
 
-// void myDel() {
-//     mfPointer mf = new MyFile("test/123");
-//     cout << mf->getLocation() << endl;
-//     cout << mf->getFileName() << endl;
-//     cout << "mydel" << endl;
-// }
+void myDel(stPointer statements) {
+    if (statements->getCommand() == MY_DEL &&
+        !statements->getOriginalPath().empty() &&
+        statements->getTargetPath().empty()) {
+        pPointer oPath = new Path(statements->getOriginalPath());
+        int failCount = 0;
+        deleteFolder(oPath, &failCount);
+        cout << failCount << "个文件删除失败" << endl;
+    } else {
+        cout << "该命令格式有误,非" << MY_DEL << "命令" << endl;
+        return;
+    }
+}
 
 // void listFiles(string path) {
 //     vector<string> dirname;
@@ -175,7 +180,7 @@ void showFiles(vcPointer files) {
     }
 }
 
-void dfsFolder(pPointer oPath, pPointer tPath, int *count) {
+void copyFolder(pPointer oPath, pPointer tPath, int *count) {
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir(oPath->getFullPath().c_str())) != NULL) {
@@ -183,33 +188,18 @@ void dfsFolder(pPointer oPath, pPointer tPath, int *count) {
             if (ent->d_name[0] != '.') {
                 pPointer newOPath = new Path(oPath->getFullPath());
                 newOPath->nextFolder(string(ent->d_name));
-                pPointer newTPath;
-                if (tPath != NULL) {
-                    newTPath = new Path(tPath->getFullPath());
-                    newTPath->nextFolder(string(ent->d_name));
-                }
+                pPointer newTPath = new Path(tPath->getFullPath());
+                newTPath->nextFolder(string(ent->d_name));
                 if (newOPath->isFolder()) {
-                    if (tPath != NULL) {
 #ifdef WIN32
-                        mkdir(newTPath->getFullPath().c_str());
+                    mkdir(newTPath->getFullPath().c_str());
 #else
-                        mkdir(newTPath->getFullPath().c_str(), 0777);
+                    mkdir(newTPath->getFullPath().c_str(), 0777);
 #endif
-                    }
-                    dfsFolder(newOPath, newTPath, count);
-                    if (tPath == NULL) {
-#ifdef WIN32
-                        rmdir(newOPath->getFullPath().c_str());
-#else
-                        rmdir(newOPath->getFullPath().c_str());
-#endif
-                    }
+                    copyFolder(newOPath, newTPath, count);
+
                 } else {
-                    if (tPath != NULL) {
-                        if (!copyFile(newOPath, newTPath)) {
-                            (*count)++;
-                        }
-                    } else if (!removeFile(newOPath)) {
+                    if (!copyFile(newOPath, newTPath)) {
                         (*count)++;
                     }
                 }
@@ -220,6 +210,35 @@ void dfsFolder(pPointer oPath, pPointer tPath, int *count) {
         perror("");
     }
 }
+
+void deleteFolder(pPointer oPath, int *count) {
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir(oPath->getFullPath().c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            if (ent->d_name[0] != '.') {
+                pPointer newOPath = new Path(oPath->getFullPath());
+                newOPath->nextFolder(string(ent->d_name));
+                if (newOPath->isFolder()) {
+                    deleteFolder(newOPath, count);
+#ifdef WIN32
+                    rmdir(newOPath->getFullPath().c_str());
+#else
+                    rmdir(newOPath->getFullPath().c_str());
+#endif
+                } else {
+                    if (!removeFile(newOPath)) {
+                        (*count)++;
+                    }
+                }
+            }
+        }
+        closedir(dir);
+    } else {
+        perror("");
+    }
+}
+
 bool copyFile(pPointer originalFile, pPointer targetFile) {
     ifstream in;
     ofstream out;
