@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <vector>
 #define MY_DIR "mydir"
 #define MY_CD "mycd"
@@ -22,6 +24,7 @@ vcPointer listFiles(string path);
 void showFiles(vcPointer files);
 void dfsFolder(pPointer oPath, pPointer tPath, int *count);
 bool copyFile(pPointer oPath, pPointer tPath);
+bool removeFile(pPointer file);
 void myHelp() {
     clearScreen();
     cout << MY_DIR << "列出目录及文件" << endl;
@@ -70,7 +73,7 @@ void myCopy(stPointer statements, pPointer *currentPath) {
         pPointer oPath = new Path(statements->getOriginalPath());
         if (tPath->isFolder()) {
             int failCount = 0;
-            dfsFolder(tPath, oPath, &failCount);
+            dfsFolder(oPath, tPath, &failCount);
             cout << failCount << "个文件复制失败" << endl;
         } else {
             cout << "目的地路径必须为文件夹" << endl;
@@ -176,17 +179,37 @@ void dfsFolder(pPointer oPath, pPointer tPath, int *count) {
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir(oPath->getFullPath().c_str())) != NULL) {
-        /* print all the files and directories within directory */
         while ((ent = readdir(dir)) != NULL) {
             if (ent->d_name[0] != '.') {
                 pPointer newOPath = new Path(oPath->getFullPath());
                 newOPath->nextFolder(string(ent->d_name));
-                pPointer newTPath = new Path(tPath->getFullPath());
-                newTPath->nextFolder(string(ent->d_name));
+                pPointer newTPath;
+                if (tPath != NULL) {
+                    newTPath = new Path(tPath->getFullPath());
+                    newTPath->nextFolder(string(ent->d_name));
+                }
                 if (newOPath->isFolder()) {
+                    if (tPath != NULL) {
+#ifdef WIN32
+                        mkdir(newTPath->getFullPath().c_str());
+#else
+                        mkdir(newTPath->getFullPath().c_str(), 0777);
+#endif
+                    }
                     dfsFolder(newOPath, newTPath, count);
+                    if (tPath == NULL) {
+#ifdef WIN32
+                        rmdir(newOPath->getFullPath().c_str());
+#else
+                        rmdir(newOPath->getFullPath().c_str());
+#endif
+                    }
                 } else {
-                    if (!copyFile(newOPath, newTPath)) {
+                    if (tPath != NULL) {
+                        if (!copyFile(newOPath, newTPath)) {
+                            (*count)++;
+                        }
+                    } else if (!removeFile(newOPath)) {
                         (*count)++;
                     }
                 }
@@ -194,7 +217,6 @@ void dfsFolder(pPointer oPath, pPointer tPath, int *count) {
         }
         closedir(dir);
     } else {
-        /* could not open directory */
         perror("");
     }
 }
@@ -220,4 +242,12 @@ bool copyFile(pPointer originalFile, pPointer targetFile) {
     out.close();
     in.close();
     return true;
+}
+
+bool removeFile(pPointer file) {
+    if (remove(file->getFilePath().c_str())) {
+        return true;
+    } else {
+        return false;
+    }
 }
