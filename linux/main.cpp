@@ -38,9 +38,6 @@ int main(void) {
         getline(cin, cmd);
         stPointer currentStatemnt = new Statements(cmd);
         currentStatemnt->changToAbsolute(currentPath);
-        if (!currentStatemnt->exists()) {
-            continue;
-        }
         string command = currentStatemnt->getCommand();
         if (command == MY_HELP) {
             myHelp();

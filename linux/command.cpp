@@ -39,7 +39,7 @@ void myHelp() {
 void myDir(stPointer statements) {
     if (statements->getCommand() == MY_DIR &&
         !statements->getOriginalPath().empty() &&
-        statements->getTargetPath().empty()) {
+        statements->getTargetPath().empty() && statements->exists()) {
         vcPointer files = listFiles(statements->getOriginalPath());
         showFiles(files);
     } else {
@@ -51,7 +51,7 @@ void myDir(stPointer statements) {
 void myCD(stPointer statements, pPointer *currentPath) {
     if (statements->getCommand() == MY_CD &&
         !statements->getOriginalPath().empty() &&
-        statements->getTargetPath().empty()) {
+        statements->getTargetPath().empty() && statements->exists()) {
         pPointer oPath = new Path(statements->getOriginalPath());
         if (oPath->isFolder()) {
             *currentPath = oPath;
@@ -68,10 +68,19 @@ void myCD(stPointer statements, pPointer *currentPath) {
 void myCopy(stPointer statements) {
     if (statements->getCommand() == MY_COPY &&
         !statements->getTargetPath().empty() &&
-        !statements->getOriginalPath().empty()) {
+        !statements->getOriginalPath().empty() &&
+        statements->existsOriginalPath()) {
         pPointer tPath = new Path(statements->getTargetPath());
         pPointer oPath = new Path(statements->getOriginalPath());
-        if (tPath->isFolder()) {
+        if (!statements->existsTargetPath()) {
+            cout << "即将新建文件夹" << endl;
+#ifdef WIN32
+            mkdir(tPath->getFullPath().c_str());
+#else
+            mkdir(tPath->getFullPath().c_str(), 0777);
+#endif
+        }
+        if (statements->existsTargetPath() && tPath->isFolder()) {
             int failCount = 0;
             copyFolder(oPath, tPath, &failCount);
             cout << failCount << "个文件复制失败" << endl;
@@ -87,10 +96,11 @@ void myCopy(stPointer statements) {
 void myDel(stPointer statements) {
     if (statements->getCommand() == MY_DEL &&
         !statements->getOriginalPath().empty() &&
-        statements->getTargetPath().empty()) {
+        statements->getTargetPath().empty() && statements->exists()) {
         pPointer oPath = new Path(statements->getOriginalPath());
         int failCount = 0;
         deleteFolder(oPath, &failCount);
+        rmdir(oPath->getFullPath().c_str());
         cout << failCount << "个文件删除失败" << endl;
     } else {
         cout << "该命令格式有误,非" << MY_DEL << "命令" << endl;
@@ -98,55 +108,11 @@ void myDel(stPointer statements) {
     }
 }
 
-// void listFiles(string path) {
-//     vector<string> dirname;
-//     struct _finddata_t findFile;
-//     int end = 0;
-//     int start = _findfirst(path.c_str().& findFile);
-//     if (start == -1) {
-//         return;
-//     }
-//     while (!(done = _findnext(start, &findFile))) {
-//         if ((_A_SUBDIR == findFile.attrib)) {
-//             dirname.push_back(findFile.name);
-//         }
-//     }
-//     vector<string>::iterator begin = dirname.begin();
-//     vector<string>::iterator end = dirname.end();
-//     while (begin != end) {
-//         cout << *begin << endl;
-//     }
-//     _findclose(start);
-// }
-
-// void filesearch(string path, int layer) {
-//     int num = 0;
-//     string dirname[100] = {""};
-//     struct _finddata_t filefind;
-//     string curr = path + "\\*.*";
-//     int done = 0, i = 0, j, handle;
-//     if ((handle = _findfirst(curr.c_str(), &filefind)) == -1)
-//         return;
-//     while (!(done = _findnext(handle, &filefind))) {
-//         if ((_A_SUBDIR == filefind.attrib))
-//             dirname[num++] = filefind.name;
-//     }
-//     for (j = 0; j <= num; j++) {
-//         cout << dirname[j] << endl;
-//     }
-//     _findclose(handle);
-// }
-// int listfile() {
-//     string path = "D:\\Test";
-//     filesearch(path, 0);
-//     return 0;
-// }
 vcPointer listFiles(string path) {
     vcPointer files = new vector<string>();
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir(path.c_str())) != NULL) {
-        /* print all the files and directories within directory */
         while ((ent = readdir(dir)) != NULL) {
             if (ent->d_name[0] != '.') {
                 files->push_back(ent->d_name);
@@ -154,7 +120,6 @@ vcPointer listFiles(string path) {
         }
         closedir(dir);
     } else {
-        /* could not open directory */
         perror("");
     }
     return files;
@@ -221,11 +186,7 @@ void deleteFolder(pPointer oPath, int *count) {
                 newOPath->nextFolder(string(ent->d_name));
                 if (newOPath->isFolder()) {
                     deleteFolder(newOPath, count);
-#ifdef WIN32
                     rmdir(newOPath->getFullPath().c_str());
-#else
-                    rmdir(newOPath->getFullPath().c_str());
-#endif
                 } else {
                     if (!removeFile(newOPath)) {
                         (*count)++;
@@ -264,7 +225,7 @@ bool copyFile(pPointer originalFile, pPointer targetFile) {
 }
 
 bool removeFile(pPointer file) {
-    if (remove(file->getFilePath().c_str())) {
+    if (remove(file->getFilePath().c_str()) != EOF) {
         return true;
     } else {
         return false;

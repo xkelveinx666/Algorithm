@@ -113,11 +113,17 @@ class Statements {
         cout << "originalPath = " << this->originalPath << endl;
         cout << "targetPath = " << this->targetPath << endl;
     }
-    bool exists() {
+    bool exists() { return existsOriginalPath() && existsTargetPath(); }
+    bool existsOriginalPath() {
         if (!(this->originalPath.empty()) && !isPath(this->originalPath)) {
             cout << this->originalPath << "该路径不合法或不存在" << endl;
             return false;
-        } else if (!(this->targetPath.empty()) && !isPath(this->targetPath)) {
+        } else {
+            return true;
+        }
+    }
+    bool existsTargetPath() {
+        if (!(this->targetPath.empty()) && !isPath(this->targetPath)) {
             cout << this->targetPath << "该路径不合法或不存在" << endl;
             return false;
         } else {
