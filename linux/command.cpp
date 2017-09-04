@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <vector>
 #define MY_DIR "mydir"
@@ -100,7 +101,7 @@ void myDel(stPointer statements) {
         pPointer oPath = new Path(statements->getOriginalPath());
         int failCount = 0;
         deleteFolder(oPath, &failCount);
-        rmdir(oPath->getFullPath().c_str());
+        rmdir(oPath->getFilePath().c_str());
         cout << failCount << "个文件删除失败" << endl;
     } else {
         cout << "该命令格式有误,非" << MY_DEL << "命令" << endl;
@@ -186,7 +187,7 @@ void deleteFolder(pPointer oPath, int *count) {
                 newOPath->nextFolder(string(ent->d_name));
                 if (newOPath->isFolder()) {
                     deleteFolder(newOPath, count);
-                    rmdir(newOPath->getFullPath().c_str());
+                    rmdir(newOPath->getFilePath().c_str());
                 } else {
                     if (!removeFile(newOPath)) {
                         (*count)++;
